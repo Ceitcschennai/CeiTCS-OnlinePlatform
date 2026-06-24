@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   const origin = req.headers.origin || "";
   const allowedOrigins = [
     "http://localhost:3000",
-    "https://cei-tcs-online-platform-9xjv.vercel.app/",
+    "https://cei-tcs-online-platform-9xjv.vercel.app",
   ];
 
   if (allowedOrigins.includes(origin) || origin.includes("vercel.app")) {

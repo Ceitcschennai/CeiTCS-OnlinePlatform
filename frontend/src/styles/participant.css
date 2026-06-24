@@ -1,0 +1,40 @@
+.employee-dashboard {
+  padding: 30px;
+}
+
+.dashboard-title {
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.stats-container {
+  display: flex;
+  gap: 30px;
+}
+
+.stat-card {
+  flex: 1;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-card h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.stat-card p {
+  font-size: 40px;
+  font-weight: bold;
+  color: #007bff;
+}

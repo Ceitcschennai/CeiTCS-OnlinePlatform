@@ -1,0 +1,98 @@
+.assign-work-page {
+  padding: 30px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+}
+
+.assign-work-page h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.assign-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.assign-form input,
+.assign-form select {
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.assign-form button {
+  padding: 12px;
+  font-size: 1rem;
+  background-color: #ff857a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.assign-form button:hover {
+  background-color: #e15d54;
+}
+
+.file-input {
+  font-size: 0.95rem;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* ===== Responsive Styles ===== */
+@media (max-width: 768px) {
+  .assign-work-page {
+    padding: 24px 16px;
+  }
+
+  .assign-work-page h2 {
+    font-size: 1.75rem;
+  }
+
+  .assign-form input,
+  .assign-form select {
+    font-size: 0.95rem;
+  }
+
+  .assign-form button {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .assign-work-page {
+    padding: 20px 12px;
+  }
+
+  .assign-work-page h2 {
+    font-size: 1.5rem;
+  }
+
+  .assign-form input,
+  .assign-form select {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .assign-form button {
+    padding: 10px;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+
+  .file-input {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+}

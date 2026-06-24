@@ -1,0 +1,395 @@
+/* Page background */
+.employee-register-wrapper {
+  min-height: 100vh;
+  background: #efeff1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Main card */
+.employee-register-form {
+  width: 100%;
+  max-width: 550px;
+  background: #ffffff;
+  padding: 35px 40px;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 6px rgba(36, 50, 156, 0.25),
+    0 25px 50px rgba(0, 0, 0, 0.12);
+  animation: fadeSlide 0.6s ease;
+}
+
+/* Title */
+.employee-register-form h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+/* Form group spacing */
+.form-group {
+  margin-bottom: 18px;
+}
+
+/* Name row */
+.name-fields {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr;
+  gap: 12px;
+}
+
+/* Time row */
+.time-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Inputs & select */
+.employee-register-form input,
+.employee-register-form select {
+  width: 100%;
+  padding: 14px 15px;
+  border-radius: 10px;
+  border: 1px solid #dbd9e4;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.25s ease;
+  background: #fff;
+}
+
+/* Focus effect */
+.employee-register-form input:focus,
+.employee-register-form select:focus {
+  border-color: #0f209b;
+  box-shadow: 0 0 0 3px rgb(8, 8, 162) (68, 19, 192, 0.15);
+}
+
+/* Labels */
+.employee-register-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #2d2b2b;
+}
+
+/* File upload */
+.employee-register-form input[type="file"] {
+  padding: 12px;
+  border: 2px dashed #8286a2;
+  border-radius: 10px;
+  background: #d4d7e0;
+  cursor: pointer;
+}
+
+/* Button */
+.employee-register-form button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 15px;
+  background: #273dde;
+  color: #ece1e1;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.employee-register-form button:hover {
+  background: #4a5df0;
+  transform: translateY(-1px);
+}
+
+/* Error & success */
+.error-message {
+  background: #ffe5e5;
+  color: #b00020;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.success-message {
+  background: #e6ffef;
+  color: #0a7d3b;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* Footer */
+.register-footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 14px;
+}
+
+.register-footer a {
+  color: #2d3672;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Animation */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .employee-register-form {
+    padding: 25px 20px;
+  }
+
+  .name-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Email OTP Verification ── */
+.email-verify-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.email-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.email-input-row input {
+  flex: 1;
+}
+
+.email-verified {
+  background: #F0FDF4 !important;
+  border-color: #22C55E !important;
+}
+
+.verify-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.verify-status.verified {
+  background: #F0FDF4;
+  color: #166534;
+}
+
+.verify-email-btn {
+  padding: 10px 20px;
+  background: #0E7490;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.verify-email-btn:hover:not(:disabled) {
+  background: #0E7490;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+}
+
+.verify-email-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otp-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeSlide 0.3s ease;
+}
+
+.otp-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.otp-input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #BAE6FD;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-align: center;
+  background: #F0FDFA;
+  transition: all 0.2s ease;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+  outline: none;
+}
+
+.otp-input:focus {
+  border-color: #0E7490;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.12);
+}
+
+.verify-otp-btn {
+  padding: 12px 20px;
+  background: #059669;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.verify-otp-btn:hover:not(:disabled) {
+  background: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.verify-otp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otp-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.otp-timer {
+  font-size: 13px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.resend-otp-btn {
+  padding: 8px 16px;
+  background: transparent;
+  color: #0E7490;
+  border: 1.5px solid #0E7490;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+}
+
+.resend-otp-btn:hover:not(:disabled) {
+  background: #F0FDFA;
+  transform: translateY(-1px);
+}
+
+.resend-otp-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.otp-error {
+  background: #FFF1F1;
+  color: #B91C1C;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  border-left: 3px solid #EF4444;
+  animation: fadeSlide 0.3s ease;
+}
+
+.otp-success {
+  background: #F0FDF4;
+  color: #166534;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  border-left: 3px solid #22C55E;
+  animation: fadeSlide 0.3s ease;
+}
+
+.register-notice {
+  background: #FFFBEB;
+  color: #92400E;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+  border-left: 3px solid #F59E0B;
+  margin-bottom: 12px;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

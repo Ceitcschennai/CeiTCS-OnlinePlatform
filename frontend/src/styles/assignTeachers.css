@@ -1,0 +1,74 @@
+.assign-page {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px 20px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.assign-page h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.assignment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.assignment-form label {
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+}
+
+.assignment-form select {
+  margin-top: 8px;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  background-color: #fff;
+}
+
+.assignment-form select[multiple] {
+  height: 120px;
+}
+
+.confirm-btn {
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  background-color: #28a745;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-btn:hover {
+  background-color: #218838;
+}
+
+@media (max-width: 480px) {
+  .assign-page {
+    padding: 20px 15px;
+  }
+
+  .assign-page h2 {
+    font-size: 1.5rem;
+  }
+
+  .assignment-form select {
+    font-size: 0.95rem;
+  }
+}

@@ -9,7 +9,7 @@ const courses = [
     tagline: "Build robust enterprise applications",
     description: "Master Java from the ground up — OOP, collections, concurrency, Spring Boot, and real-world project development.",
     duration: "12 Weeks", level: "Beginner to Advanced", lessons: 84, projects: 6,
-    price: "₹4,999", originalPrice: "₹9,999",
+    price: "₹", originalPrice: "₹",
     topics: ["Core Java & OOP Concepts","Data Structures & Algorithms","Java Collections Framework","Multithreading & Concurrency","Spring Boot & REST APIs","Database Integration (JDBC/JPA)","Unit Testing with JUnit","Real-world Project"],
     badge: "🔥 Most Popular",
     subjectKeywords: ["java"],
@@ -19,7 +19,7 @@ const courses = [
     tagline: "The language of the web",
     description: "From fundamentals to advanced JS — closures, promises, async/await, ES6+, DOM manipulation, and modern JavaScript patterns used at top companies.",
     duration: "10 Weeks", level: "Beginner to Intermediate", lessons: 70, projects: 5,
-    price: "₹3,999", originalPrice: "₹7,999",
+    price: "₹", originalPrice: "₹",
     topics: ["JS Fundamentals & ES6+","DOM Manipulation","Async JS & Promises","Fetch API & REST","Closures & Prototypes","Event Loop Deep Dive","Error Handling","Mini Projects"],
     badge: "⭐ Top Rated",
     subjectKeywords: ["javascript", "js"],
@@ -29,7 +29,7 @@ const courses = [
     tagline: "The backbone of the web",
     description: "Master semantic HTML5, accessibility best practices, forms, media embedding, and SEO-friendly markup.",
     duration: "4 Weeks", level: "Beginner", lessons: 28, projects: 3,
-    price: "₹999", originalPrice: "₹2,999",
+    price: "₹", originalPrice: "₹",
     topics: ["HTML5 Structure & Semantics","Forms & Validation","Media & Embedding","Accessibility & ARIA","SEO Basics","HTML Best Practices"],
     badge: "🚀 Quick Start",
     subjectKeywords: ["html"],
@@ -39,7 +39,7 @@ const courses = [
     tagline: "Style the world with code",
     description: "Go from basic styling to advanced CSS with Flexbox, Grid, animations, responsive design, and CSS variables.",
     duration: "6 Weeks", level: "Beginner to Intermediate", lessons: 40, projects: 4,
-    price: "₹1,999", originalPrice: "₹4,999",
+    price: "₹", originalPrice: "₹",
     topics: ["CSS Fundamentals","Flexbox & Grid","Responsive Design","CSS Variables","Animations & Transitions","CSS Architecture (BEM)","Dark Mode Implementation"],
     badge: null,
     subjectKeywords: ["css"],
@@ -49,7 +49,7 @@ const courses = [
     tagline: "Versatile, powerful, in-demand",
     description: "Learn Python for web development, automation, data science, and scripting.",
     duration: "10 Weeks", level: "Beginner to Advanced", lessons: 72, projects: 5,
-    price: "₹3,999", originalPrice: "₹8,499",
+    price: "₹", originalPrice: "₹",
     topics: ["Python Basics & OOP","File Handling & I/O","Libraries: NumPy, Pandas","Web Scraping","Django Fundamentals","REST API Development","Automation Scripts","Data Pipelines"],
     badge: "🔥 Trending",
     subjectKeywords: ["python"],
@@ -59,7 +59,7 @@ const courses = [
     tagline: "Full-stack mastery in one course",
     description: "Build complete web apps with MongoDB, Express, React, and Node.js.",
     duration: "16 Weeks", level: "Intermediate to Advanced", lessons: 112, projects: 8,
-    price: "₹7,999", originalPrice: "₹14,999",
+    price: "₹", originalPrice: "₹",
     topics: ["React & Hooks","Node.js & Express","MongoDB & Mongoose","REST API Design","JWT Authentication","Redux State Management","File Uploads","Deployment (Vercel/Render)"],
     badge: "🏆 Premium",
     subjectKeywords: ["mern", "react", "node", "mongodb"],
@@ -69,7 +69,7 @@ const courses = [
     tagline: "Scale globally with the cloud",
     description: "Master AWS core services — EC2, S3, Lambda, RDS, VPC, and CloudFormation.",
     duration: "12 Weeks", level: "Intermediate", lessons: 88, projects: 6,
-    price: "₹5,999", originalPrice: "₹11,999",
+    price: "₹", originalPrice: "₹",
     topics: ["AWS Fundamentals","EC2 & Auto Scaling","S3 & CloudFront","Lambda & Serverless","RDS & DynamoDB","VPC & Networking","CloudFormation / IaC","Certification Prep"],
     badge: "☁️ High Demand",
     subjectKeywords: ["cloud", "aws"],
@@ -79,7 +79,7 @@ const courses = [
     tagline: "Test smarter, ship faster",
     description: "Learn end-to-end automation with Selenium, TestNG, Appium, and CI/CD integration.",
     duration: "10 Weeks", level: "Intermediate", lessons: 66, projects: 5,
-    price: "₹4,499", originalPrice: "₹8,999",
+    price: "₹", originalPrice: "₹",
     topics: ["Manual Testing Fundamentals","Selenium WebDriver","TestNG Framework","Page Object Model","API Testing with Postman","Appium (Mobile Testing)","CI/CD with Jenkins","Test Reports"],
     badge: null,
     subjectKeywords: ["testing", "automation", "selenium", "qa"],
@@ -89,7 +89,7 @@ const courses = [
     tagline: "Turn data into decisions",
     description: "Master the data science lifecycle — data wrangling, EDA, visualization, machine learning, and model deployment.",
     duration: "14 Weeks", level: "Beginner to Advanced", lessons: 98, projects: 7,
-    price: "₹6,999", originalPrice: "₹12,999",
+    price: "₹", originalPrice: "₹",
     topics: ["Python for Data Science","Pandas & NumPy","Data Visualization","Exploratory Data Analysis","Machine Learning Basics","Scikit-learn","Model Evaluation","Capstone Project"],
     badge: "📈 Career Booster",
     subjectKeywords: ["data science", "data", "ml", "machine learning"],
@@ -99,7 +99,7 @@ const courses = [
     tagline: "Crack any coding interview",
     description: "Deep-dive into Data Structures & Algorithms. Arrays, trees, graphs, dynamic programming.",
     duration: "14 Weeks", level: "Intermediate to Advanced", lessons: 100, projects: 0,
-    price: "₹5,499", originalPrice: "₹10,999",
+    price: "₹", originalPrice: "₹",
     topics: ["Arrays & Strings","Linked Lists & Stacks","Trees & Graphs","Recursion & Backtracking","Dynamic Programming","Greedy Algorithms","Binary Search","Mock Interviews"],
     badge: "🎯 Interview Prep",
     subjectKeywords: ["dsa", "algorithms", "data structures"],
@@ -109,7 +109,7 @@ const courses = [
     tagline: "Build the future with AI",
     description: "From machine learning theory to LLMs — build intelligent systems with TensorFlow, PyTorch, NLP pipelines.",
     duration: "16 Weeks", level: "Advanced", lessons: 110, projects: 7,
-    price: "₹8,999", originalPrice: "₹16,999",
+    price: "₹", originalPrice: "₹",
     topics: ["ML Fundamentals","Neural Networks","TensorFlow & PyTorch","Computer Vision (CNN)","NLP & Transformers","LLMs & Fine-tuning","RAG Applications","Generative AI Projects"],
     badge: "🤖 Future-Proof",
     subjectKeywords: ["ai", "artificial intelligence", "deep learning"],
@@ -142,7 +142,7 @@ function filterFacultyForCourse(facultyList, course) {
 }
 
 // ─── Course Detail View ───────────────────────────────────────────────────────
-function CourseDetail({ course, onBack, facultyList, facultyLoading }) {
+function CourseDetail({ course, onBack, facultyList, facultyLoading, navigate }) {
   const [activeTab, setActiveTab] = useState("curriculum");
 
   const savePercent = Math.round(
@@ -203,7 +203,15 @@ function CourseDetail({ course, onBack, facultyList, facultyLoading }) {
                 <div className="cd-price">{course.price}</div>
                 <div className="cd-orig-price">{course.originalPrice}</div>
                 <div className="cd-save-badge">Save {savePercent}%</div>
-                <button className="cd-enroll-btn">🚀 Enroll Now</button>
+                <button className="cd-enroll-btn" onClick={() => {
+                  const selectedCourse = {
+                    courseId: course.id,
+                    courseName: course.name,
+                    price: course.price
+                  };
+                  localStorage.setItem("selectedCourseForEnrollment", JSON.stringify(selectedCourse));
+                  navigate("/register");
+                }}>🚀 Enroll Now</button>
                 <button className="cd-trial-btn">Try Free Preview</button>
                 <div className="cd-includes">
                   <div className="cd-include-item">✅ Lifetime Access</div>
@@ -393,6 +401,12 @@ export default function CourseDetailPage() {
     }
   }, [incomingCourse]);
 
+  useEffect(() => {
+    if (selectedCourseId) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [selectedCourseId]);
+
   const selectedCourse = courses.find((c) => c.id === selectedCourseId);
 
   function handleBack() {
@@ -406,6 +420,7 @@ export default function CourseDetailPage() {
       onBack={handleBack}
       facultyList={facultyList}
       facultyLoading={facultyLoading}
+      navigate={navigate}
     />
   ) : (
     <CoursesList onSelectCourse={setSelectedCourseId} />

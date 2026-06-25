@@ -73,6 +73,7 @@ app.use("/api/teacher", require("./routes/teacherroutes.js"));
 app.use("/api/notifications", require("./routes/notificationroutes.js"));
 app.use("/api/schedules", require("./routes/scheduleroutes.js"));
 app.use("/api/Notification", require("./routes/notificationroutes.js"));
+app.use("/api/mentor-requests", require("./routes/mentorrequestroutes.js"));
 
 // ─────────────────────────────────────────────
 // HEALTH CHECK

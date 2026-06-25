@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import API_BASE_URL from "../config/api";
 
 const mentors = [
   {
     id: 1,
-    name: "Siva",
+    name: "Naveen",
     title: "Software Engineer",
-    company: "CEITCS",
+    company: "CeiTCS",
     companyLogo: "🔵",
     experience: "6 Years",
     rating: 4.5,
@@ -18,9 +19,9 @@ const mentors = [
   },
   {
     id: 2,
-    name: "Pradeep",
+    name: "Janarthanan",
     title: "Full Stack Developer",
-    company: "CEITCS",
+    company: "CeiTCS",
     companyLogo: "🟦",
     experience: "6 Years",
     rating: 4.5,
@@ -35,7 +36,7 @@ const mentors = [
     id: 3,
     name: "Sanjay",
     title: "Cloud Architect",
-    company: "CEITCS",
+    company: "CeiTCS",
     companyLogo: "🟠",
     experience: "6 Years",
     rating: 4.95,
@@ -50,7 +51,7 @@ const mentors = [
     id: 4,
     name: "Poovizhi",
     title: "Data Scientist",
-    company: "CEITCS",
+    company: "CeiTCS",
     companyLogo: "🔷",
     experience: "13 Years",
     rating: 4.85,
@@ -65,7 +66,7 @@ const mentors = [
     id: 5,
     name: "RajiniKanth",
     title: "Healthcare & Finance",
-    company: "CEITCS",
+    company: "CeiTCS",
     companyLogo: "🟩",
     experience: "12 Years",
     rating: 4.75,
@@ -80,7 +81,7 @@ const mentors = [
     id: 6,
     name: "Lokesh",
     title: "Full Stack Developer",
-    company: "CEITCS",
+    company: "CeiTCS",
     companyLogo: "🟡",
     experience: "4 Years",
     rating: 4.7,
@@ -95,7 +96,7 @@ const mentors = [
     id: 7,
     name: "Vinay",
     title: "Python Developer",
-    company: "CEITCS",
+    company: "CeiTCS",
     companyLogo: "🔷",
     experience: "5 Years",
     rating: 4.5,
@@ -590,16 +591,194 @@ const styles = `
     .mp-modal     { padding: 24px 18px; }
     .mp-modal-stats { grid-template-columns: repeat(2, 1fr); }
   }
+
+  /* ── Form ── */
+  .mp-form-group {
+    margin-bottom: 14px;
+  }
+  .mp-form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+    font-family: 'Nunito', sans-serif;
+  }
+  .mp-form-input,
+  .mp-form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #dde0e8;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Nunito', sans-serif;
+    color: #1a1a2e;
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+  .mp-form-input:focus,
+  .mp-form-textarea:focus {
+    outline: none;
+    border-color: #0e9e8a;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.1);
+  }
+  .mp-form-textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  .mp-form-row {
+    display: flex;
+    gap: 12px;
+  }
+  .mp-form-row .mp-form-group {
+    flex: 1;
+  }
+  .mp-form-submit {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #0e9e8a;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s;
+    margin-top: 4px;
+  }
+  .mp-form-submit:hover {
+    background: #0a8070;
+    box-shadow: 0 6px 20px rgba(14,158,138,0.4);
+  }
+  .mp-form-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .mp-form-cancel {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1.5px solid #dde0e8;
+    background: #fff;
+    color: #555;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .mp-form-cancel:hover {
+    border-color: #0e9e8a;
+    color: #0e9e8a;
+  }
+  .mp-success {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .mp-success-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .mp-success-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+  .mp-success-msg {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+  }
 `;
 
 export default function MentorsPage() {
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [activeFilter, setActiveFilter]     = useState("All");
+  const [formMode, setFormMode]             = useState(null);
+  const [submitting, setSubmitting]         = useState(false);
+  const [submitSuccess, setSubmitSuccess]   = useState(false);
+  const [formData, setFormData] = useState({
+    visitorName: "",
+    visitorEmail: "",
+    visitorPhone: "",
+    preferredDate: "",
+    preferredTime: "",
+    purpose: "",
+    notes: "",
+    subject: "",
+    message: ""
+  });
 
-  const filtered =
-    activeFilter === "All"
+  const filtered = useMemo(() => {
+    return activeFilter === "All"
       ? mentors
       : mentors.filter((m) => m.courses.includes(activeFilter));
+  }, [activeFilter]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const openForm = (mode) => {
+    setFormMode(mode);
+    setFormData({
+      visitorName: "",
+      visitorEmail: "",
+      visitorPhone: "",
+      preferredDate: "",
+      preferredTime: "",
+      purpose: "",
+      notes: "",
+      subject: "",
+      message: ""
+    });
+    setSubmitSuccess(false);
+  };
+
+  const closeModal = () => {
+    setSelectedMentor(null);
+    setFormMode(null);
+    setSubmitSuccess(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const payload = {
+        requestType: formMode,
+        mentorName: selectedMentor.name,
+        mentorSubject: selectedMentor.courses?.[0] || "",
+        mentorPosition: selectedMentor.title || "",
+        ...formData
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/mentor-requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSubmitSuccess(true);
+      } else {
+        alert(data.message || "Submission failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -636,7 +815,7 @@ export default function MentorsPage() {
               key={mentor.id}
               className="mp-card"
               style={{ "--accent": mentor.color }}
-              onClick={() => setSelectedMentor(mentor)}
+              onClick={() => { setSelectedMentor(mentor); setFormMode(null); setSubmitSuccess(false); }}
             >
               {/* Top Row */}
               <div className="mp-card-top">
@@ -692,64 +871,307 @@ export default function MentorsPage() {
         {selectedMentor && (
           <div
             className="mp-modal-overlay"
-            onClick={() => setSelectedMentor(null)}
+            onClick={closeModal}
           >
             <div className="mp-modal" onClick={(e) => e.stopPropagation()}>
-              <button
-                className="mp-modal-close"
-                onClick={() => setSelectedMentor(null)}
-              >
-                ✕
-              </button>
 
-              <div
-                className="mp-modal-avatar"
-                style={{ background: selectedMentor.color }}
-              >
-                {selectedMentor.avatar}
-              </div>
+              {!formMode && !submitSuccess ? (
+                <>
+                  <button
+                    className="mp-modal-close"
+                    onClick={closeModal}
+                  >
+                    ✕
+                  </button>
 
-              <h2>{selectedMentor.name}</h2>
-              <p className="mp-modal-role">
-                {selectedMentor.title} · {selectedMentor.company} ·{" "}
-                {selectedMentor.experience} Exp.
-              </p>
+                  <div
+                    className="mp-modal-avatar"
+                    style={{ background: selectedMentor.color }}
+                  >
+                    {selectedMentor.avatar}
+                  </div>
 
-              <p className="mp-modal-bio">{selectedMentor.bio}</p>
+                  <h2>{selectedMentor.name}</h2>
+                  <p className="mp-modal-role">
+                    {selectedMentor.title} · {selectedMentor.company} ·{" "}
+                    {selectedMentor.experience} Exp.
+                  </p>
 
-              {/* Stats */}
-              <div className="mp-modal-stats">
-                <div className="mp-modal-stat">
-                  <span className="mp-modal-stat-val">⭐{selectedMentor.rating}</span>
-                  <span className="mp-modal-stat-lbl">Rating</span>
+                  <p className="mp-modal-bio">{selectedMentor.bio}</p>
+
+                  {/* Stats */}
+                  <div className="mp-modal-stats">
+                    <div className="mp-modal-stat">
+                      <span className="mp-modal-stat-val">⭐{selectedMentor.rating}</span>
+                      <span className="mp-modal-stat-lbl">Rating</span>
+                    </div>
+                    <div className="mp-modal-stat">
+                      <span className="mp-modal-stat-val">{selectedMentor.students.toLocaleString()}</span>
+                      <span className="mp-modal-stat-lbl">Students</span>
+                    </div>
+                    <div className="mp-modal-stat">
+                      <span className="mp-modal-stat-val">{selectedMentor.sessions}</span>
+                      <span className="mp-modal-stat-lbl">Sessions</span>
+                    </div>
+                    <div className="mp-modal-stat">
+                      <span className="mp-modal-stat-val">{selectedMentor.experience}</span>
+                      <span className="mp-modal-stat-lbl">Exp.</span>
+                    </div>
+                  </div>
+
+                  {/* Courses */}
+                  <div className="mp-modal-courses-label">Teaches</div>
+                  <div className="mp-course-tags">
+                    {selectedMentor.courses.map((c) => (
+                      <span key={c} className="mp-course-tag">{c}</span>
+                    ))}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="mp-modal-actions">
+                    <button
+                      className="mp-modal-btn-primary"
+                      onClick={() => openForm("booking")}
+                    >
+                      📅 Book a Session
+                    </button>
+                    <button
+                      className="mp-modal-btn-secondary"
+                      onClick={() => openForm("message")}
+                    >
+                      💬 Message
+                    </button>
+                  </div>
+                </>
+              ) : submitSuccess ? (
+                <div className="mp-success">
+                  <div className="mp-success-icon">✅</div>
+                  <div className="mp-success-title">
+                    {formMode === "booking" ? "Booking Request Sent!" : "Message Sent!"}
+                  </div>
+                  <div className="mp-success-msg">
+                    Thank you for reaching out. Our team will get back to you shortly.
+                  </div>
+                  <button
+                    className="mp-form-cancel"
+                    onClick={closeModal}
+                    style={{ marginTop: 16 }}
+                  >
+                    Close
+                  </button>
                 </div>
-                <div className="mp-modal-stat">
-                  <span className="mp-modal-stat-val">{selectedMentor.students.toLocaleString()}</span>
-                  <span className="mp-modal-stat-lbl">Students</span>
-                </div>
-                <div className="mp-modal-stat">
-                  <span className="mp-modal-stat-val">{selectedMentor.sessions}</span>
-                  <span className="mp-modal-stat-lbl">Sessions</span>
-                </div>
-                <div className="mp-modal-stat">
-                  <span className="mp-modal-stat-val">{selectedMentor.experience}</span>
-                  <span className="mp-modal-stat-lbl">Exp.</span>
-                </div>
-              </div>
+              ) : formMode === "booking" ? (
+                <>
+                  <button
+                    className="mp-modal-close"
+                    onClick={closeModal}
+                  >
+                    ✕
+                  </button>
 
-              {/* Courses */}
-              <div className="mp-modal-courses-label">Teaches</div>
-              <div className="mp-course-tags">
-                {selectedMentor.courses.map((c) => (
-                  <span key={c} className="mp-course-tag">{c}</span>
-                ))}
-              </div>
+                  <h2>Book a Session</h2>
+                  <p className="mp-modal-role">
+                    with {selectedMentor.name} · {selectedMentor.courses?.[0] || ""}
+                  </p>
 
-              {/* Actions */}
-              <div className="mp-modal-actions">
-                <button className="mp-modal-btn-primary">📅 Book a Session</button>
-                <button className="mp-modal-btn-secondary">💬 Message</button>
-              </div>
+                  <form onSubmit={handleSubmit}>
+                    <div className="mp-form-row">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Your Name *</label>
+                        <input
+                          className="mp-form-input"
+                          type="text"
+                          name="visitorName"
+                          value={formData.visitorName}
+                          onChange={handleInputChange}
+                          placeholder="John Doe"
+                          required
+                        />
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Your Email *</label>
+                        <input
+                          className="mp-form-input"
+                          type="email"
+                          name="visitorEmail"
+                          value={formData.visitorEmail}
+                          onChange={handleInputChange}
+                          placeholder="john@example.com"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-form-group">
+                      <label className="mp-form-label">Your Phone</label>
+                      <input
+                        className="mp-form-input"
+                        type="tel"
+                        name="visitorPhone"
+                        value={formData.visitorPhone}
+                        onChange={handleInputChange}
+                        placeholder="+1 234 567 890"
+                      />
+                    </div>
+
+                    <div className="mp-form-row">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Preferred Date</label>
+                        <input
+                          className="mp-form-input"
+                          type="date"
+                          name="preferredDate"
+                          value={formData.preferredDate}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Preferred Time</label>
+                        <input
+                          className="mp-form-input"
+                          type="time"
+                          name="preferredTime"
+                          value={formData.preferredTime}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-form-group">
+                      <label className="mp-form-label">Purpose</label>
+                      <input
+                        className="mp-form-input"
+                        type="text"
+                        name="purpose"
+                        value={formData.purpose}
+                        onChange={handleInputChange}
+                        placeholder="e.g. Career guidance, Project help"
+                      />
+                    </div>
+
+                    <div className="mp-form-group">
+                      <label className="mp-form-label">Additional Notes</label>
+                      <textarea
+                        className="mp-form-textarea"
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleInputChange}
+                        placeholder="Any specific topics or questions..."
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="mp-form-submit"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Submitting..." : "Submit Booking Request"}
+                    </button>
+                    <button
+                      type="button"
+                      className="mp-form-cancel"
+                      onClick={() => setFormMode(null)}
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </>
+              ) : formMode === "message" ? (
+                <>
+                  <button
+                    className="mp-modal-close"
+                    onClick={closeModal}
+                  >
+                    ✕
+                  </button>
+
+                  <h2>Leave a Message</h2>
+                  <p className="mp-modal-role">
+                    to {selectedMentor.name} · {selectedMentor.courses?.[0] || ""}
+                  </p>
+
+                  <form onSubmit={handleSubmit}>
+                    <div className="mp-form-row">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Your Name *</label>
+                        <input
+                          className="mp-form-input"
+                          type="text"
+                          name="visitorName"
+                          value={formData.visitorName}
+                          onChange={handleInputChange}
+                          placeholder="John Doe"
+                          required
+                        />
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Your Email *</label>
+                        <input
+                          className="mp-form-input"
+                          type="email"
+                          name="visitorEmail"
+                          value={formData.visitorEmail}
+                          onChange={handleInputChange}
+                          placeholder="john@example.com"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-form-group">
+                      <label className="mp-form-label">Your Phone</label>
+                      <input
+                        className="mp-form-input"
+                        type="tel"
+                        name="visitorPhone"
+                        value={formData.visitorPhone}
+                        onChange={handleInputChange}
+                        placeholder="+1 234 567 890"
+                      />
+                    </div>
+
+                    <div className="mp-form-group">
+                      <label className="mp-form-label">Subject *</label>
+                      <input
+                        className="mp-form-input"
+                        type="text"
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleInputChange}
+                        placeholder="What is this about?"
+                        required
+                      />
+                    </div>
+
+                    <div className="mp-form-group">
+                      <label className="mp-form-label">Message *</label>
+                      <textarea
+                        className="mp-form-textarea"
+                        name="message"
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        placeholder="Write your message here..."
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="mp-form-submit"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Sending..." : "Send Message"}
+                    </button>
+                    <button
+                      type="button"
+                      className="mp-form-cancel"
+                      onClick={() => setFormMode(null)}
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </>
+              ) : null}
             </div>
           </div>
         )}

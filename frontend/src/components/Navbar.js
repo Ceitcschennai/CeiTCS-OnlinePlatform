@@ -55,7 +55,7 @@ function Navbar() {
         />
 
         <div className="brand-text">
-          <h1>CEITCS</h1>
+          <h1>CeiTCS</h1>
           <p>PROFESSIONAL ACADEMY</p>
         </div>
 

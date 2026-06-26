@@ -37,16 +37,13 @@ const assignmentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  description: {
+description: {
     type: String,
     required: true
   },
-<<<<<<< HEAD
-  fromDate: {
+   fromDate: {
     type: Date
   },
-=======
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
   dueDate: {
     type: Date,
     required: true

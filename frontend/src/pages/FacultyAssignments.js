@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+﻿import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import API_BASE_URL from '../config/api';
 import '../styles/assignments.css';
 
@@ -17,20 +17,14 @@ const FacultyAssignments = () => {
     });
     const [newAssignment, setNewAssignment] = useState({
         subject: '',
-        title: '',
-<<<<<<< HEAD
+title: '',
         fromDate: '',
-=======
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
         dueDate: '',
         priority: 'Medium',
         description: '',
-        totalStudents: 30
+totalStudents: 30
     });
-<<<<<<< HEAD
     const [pdfFileName, setPdfFileName] = useState('');
-=======
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
 
     const getTraineeData = () => {
         try {
@@ -136,12 +130,9 @@ const FacultyAssignments = () => {
 
             const data = await response.json();
             if (data.success) {
-<<<<<<< HEAD
-                setNewAssignment({ subject: '', title: '', fromDate: '', dueDate: '', priority: 'Medium', description: '', totalStudents: 30 });
+
+             setNewAssignment({ subject: '', title: '', fromDate:'', dueDate: '', priority: 'Medium', description: '', totalStudents: 30 });
                 setPdfFileName('');
-=======
-                setNewAssignment({ subject: '', title: '', dueDate: '', priority: 'Medium', description: '', totalStudents: 30 });
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
                 setShowCreateForm(false);
                 await fetchAssignments();
                 await fetchStats();
@@ -223,7 +214,7 @@ const FacultyAssignments = () => {
                         <div className="assignment-stats__label">Avg. Submission Rate</div>
                     </div>
                 </div>
-            </div>
+            </div> 
 
             {/* Controls */}
             <div className="assignment-controls">
@@ -253,7 +244,7 @@ const FacultyAssignments = () => {
             </div>
 
             {/* Create Assignment Modal */}
-            {showCreateForm && (
+            {showCreateForm &&(
                 <div className="assignment-modal-overlay" style={{ position: 'fixed', top: 50, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                     <div className="assignment-modal-content" style={{ background: 'white', padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '620px', maxHeight: '80vh', overflowY: 'auto', margin: '2rem' }}>
                         <h2 style={{ marginBottom: '1.5rem', color: '#1f2937' }}>Create New Assignment</h2>
@@ -267,44 +258,199 @@ const FacultyAssignments = () => {
                                 <input type="text" value={newAssignment.title} onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })} className="assignment-controls__search-input" required />
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
-<<<<<<< HEAD
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>From Date *</label>
-                                <input type="date" value={newAssignment.fromDate} onChange={(e) => setNewAssignment({ ...newAssignment, fromDate: e.target.value })} className="assignment-controls__search-input" required />
-                            </div>
-                            <div style={{ marginBottom: '1rem' }}>
-=======
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Due Date *</label>
-                                <input type="date" value={newAssignment.dueDate} onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })} className="assignment-controls__search-input" required />
-                            </div>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Priority</label>
-                                <select value={newAssignment.priority} onChange={(e) => setNewAssignment({ ...newAssignment, priority: e.target.value })} className="assignment-controls__filter-select" style={{ width: '100%' }}>
-                                    <option value="Low">Low</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="High">High</option>
-                                </select>
-                            </div>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Total Students</label>
-                                <input type="number" value={newAssignment.totalStudents} onChange={(e) => setNewAssignment({ ...newAssignment, totalStudents: parseInt(e.target.value) || 30 })} className="assignment-controls__search-input" min="1" max="100" />
-                            </div>
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Description</label>
-                                <textarea value={newAssignment.description} onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })} className="assignment-controls__search-input" rows="4" style={{ resize: 'vertical' }} placeholder="Provide detailed instructions for the assignment..." />
-<<<<<<< HEAD
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '0.5rem', gap: '0.5rem' }}>
-                                    <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{pdfFileName || 'No file chosen'}</span>
-                                    <input id="assignmentPdf" type="file" accept=".pdf,application/pdf" hidden onChange={(e) => setPdfFileName(e.target.files[0]?.name || '')} />
-                                    <label htmlFor="assignmentPdf" className="assignment-controls__create-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>📤 Upload File</label>
-                                </div>
-=======
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
-                            </div>
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button type="button" onClick={() => setShowCreateForm(false)} style={{ flex: 1, padding: '0.875rem', background: '#6b7280', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }} disabled={loading}>Cancel</button>
-                                <button type="submit" className="assignment-submit-btn" style={{ flex: 1 }} disabled={loading}>{loading ? 'Creating...' : 'Create Assignment'}</button>
-                            </div>
+    <label
+        style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            fontWeight: '500'
+        }}
+    >
+        From Date *
+    </label>
+    <input
+        type="date"
+        value={newAssignment.fromDate}
+        onChange={(e) =>
+            setNewAssignment({
+                ...newAssignment,
+                fromDate: e.target.value
+            })
+        }
+        className="assignment-controls__search-input"
+        required
+    />
+</div>
+
+<div style={{ marginBottom: '1rem' }}>
+    <label
+        style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            fontWeight: '500'
+        }}
+    >
+        Due Date *
+    </label>
+    <input
+        type="date"
+        value={newAssignment.dueDate}
+        onChange={(e) =>
+            setNewAssignment({
+                ...newAssignment,
+                dueDate: e.target.value
+            })
+        }
+        className="assignment-controls__search-input"
+        required
+    />
+</div>
+
+<div style={{ marginBottom: '1rem' }}>
+    <label
+        style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            fontWeight: '500'
+        }}
+    >
+        Priority
+    </label>
+    <select
+        value={newAssignment.priority}
+        onChange={(e) =>
+            setNewAssignment({
+                ...newAssignment,
+                priority: e.target.value
+            })
+        }
+        className="assignment-controls__filter-select"
+        style={{ width: '100%' }}
+    >
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+    </select>
+</div>
+
+<div style={{ marginBottom: '1rem' }}>
+    <label
+        style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            fontWeight: '500'
+        }}
+    >
+        Total Students
+    </label>
+    <input
+        type="number"
+        value={newAssignment.totalStudents}
+        onChange={(e) =>
+            setNewAssignment({
+                ...newAssignment,
+                totalStudents: parseInt(e.target.value) || 30
+            })
+        }
+        className="assignment-controls__search-input"
+        min="1"
+        max="100"
+    />
+</div>
+
+<div style={{ marginBottom: '1.5rem' }}>
+    <label
+        style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            fontWeight: '500'
+        }}
+    >
+        Description
+    </label>
+
+    <textarea
+        value={newAssignment.description}
+        onChange={(e) =>
+            setNewAssignment({
+                ...newAssignment,
+                description: e.target.value
+            })
+        }
+        className="assignment-controls__search-input"
+        rows="4"
+        style={{ resize: 'vertical' }}
+        placeholder="Provide detailed instructions for the assignment..."
+    />
+
+    <div
+        style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            marginTop: '0.5rem',
+            gap: '0.5rem'
+        }}
+    >
+        <span
+            style={{
+                fontSize: '0.875rem',
+                color: '#6b7280'
+            }}
+        >
+            {pdfFileName || 'No file chosen'}
+        </span>
+
+        <input
+            id="assignmentPdf"
+            type="file"
+            accept=".pdf,application/pdf"
+            hidden
+            onChange={(e) =>
+                setPdfFileName(e.target.files[0]?.name || '')
+            }
+        />
+
+        <label
+            htmlFor="assignmentPdf"
+            className="assignment-controls__create-btn"
+            style={{
+                fontSize: '0.875rem',
+                padding: '0.5rem 1rem',
+                cursor: 'pointer'
+            }}
+        >
+            Upload File
+        </label>
+    </div>
+</div>
+
+<div style={{ display: 'flex', gap: '1rem' }}>
+    <button
+        type="button"
+        onClick={() => setShowCreateForm(false)}
+        style={{
+            flex: 1,
+            padding: '0.875rem',
+            background: '#6b7280',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+        }}
+        disabled={loading}
+    >
+        Cancel
+    </button>
+
+    <button
+        type="submit"
+        className="assignment-submit-btn"
+        style={{ flex: 1 }}
+        disabled={loading}
+    >
+        {loading ? 'Creating...' : 'Create Assignment'}
+    </button>
+</div>
                         </form>
                     </div>
                 </div>

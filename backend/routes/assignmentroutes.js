@@ -91,13 +91,9 @@ router.post('/', async (req, res) => {
     const {
       subject,
       title,
-      description,
-      dueDate,
-<<<<<<< HEAD
-      fromDate,
-=======
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
-      priority,
+description,
+       fromDate,
+       priority,
       teacherId,
       teacherName,
       class: assignmentClass,
@@ -111,15 +107,12 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const newAssignment = new Assignment({
-      subject,
-      title,
-      description,
-<<<<<<< HEAD
-      fromDate,
-=======
->>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
-      dueDate,
+const newAssignment = new Assignment({
+       subject,
+       title,
+       description,
+       fromDate,
+       dueDate,
       priority: priority || 'Medium',
       teacherId,
       teacherName,

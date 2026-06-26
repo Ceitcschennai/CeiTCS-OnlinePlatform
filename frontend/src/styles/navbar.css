@@ -1,0 +1,415 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@400;500;700&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar{
+
+  width:100%;
+
+  height:85px;
+
+  background:#ffffff;
+
+  display:grid;
+
+  grid-template-columns:1fr auto 1fr;
+
+  align-items:center;
+
+  padding:0 45px;
+
+  border-bottom:1px solid #e5e7eb;
+
+  position:sticky;
+
+  top:0;
+
+  z-index:999;
+
+  font-family:'DM Sans',sans-serif;
+}
+
+/* =========================
+   BRAND
+========================= */
+
+.navbar-brand{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:14px;
+
+  text-decoration:none;
+}
+
+.logo{
+
+  height:62px;
+
+  width:auto;
+
+  object-fit:contain;
+}
+
+.brand-text{
+
+  display:flex;
+
+  flex-direction:column;
+}
+
+.brand-text h1{
+
+  font-size:24px;
+
+  font-weight:900;
+
+  color:#0f172a;
+
+  font-family:'Nunito',sans-serif;
+
+  line-height:1;
+}
+
+.brand-text p{
+
+  margin-top:4px;
+
+  color:#0891b2;
+
+  font-size:13px;
+
+  font-weight:700;
+
+  letter-spacing:1px;
+}
+
+/* =========================
+   CENTER LINKS
+========================= */
+
+.navbar-links{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:20px;
+}
+
+.nav-link{
+
+  text-decoration:none;
+
+  color:#1e293b !important;
+
+  font-size:17px;
+
+  font-weight:700;
+
+  padding:10px 18px;
+
+  border-radius:12px;
+
+  transition:0.2s;
+}
+
+/* HOVER */
+
+.nav-link:hover{
+
+  background:#f1f5f9;
+
+  color:#0891b2 !important;
+}
+
+/* ACTIVE */
+
+.active-link{
+
+  background:#ecfeff;
+
+  color:#0891b2 !important;
+}
+
+/* =========================
+   RIGHT SIDE
+========================= */
+
+.navbar-right{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-self:end;
+
+  gap:14px;
+}
+
+/* =========================
+   REGISTER
+========================= */
+
+.register-btn{
+
+  text-decoration:none;
+
+  background:linear-gradient(
+    135deg,
+    #0891b2,
+    #0e7490
+  );
+
+  color:white;
+
+  padding:11px 24px;
+
+  border-radius:999px;
+
+  font-size:16px;
+
+  font-weight:700;
+
+  transition:0.2s;
+}
+
+.register-btn:hover{
+
+  transform:translateY(-2px);
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+.logout-btn{
+
+  border:none;
+
+  background:#f97316;
+
+  color:white;
+
+  padding:11px 28px;
+
+  border-radius:999px;
+
+  font-size:16px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:0.2s;
+}
+
+.logout-btn:hover{
+
+  background:#ea580c;
+}
+
+
+.dashboard-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-weight: 600;
+}
+
+.dashboard-btn:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================
+   MOBILE BUTTON
+========================= */
+
+.menu-btn{
+
+  display:none;
+
+  justify-self:end;
+
+  border:none;
+
+  background:none;
+
+  font-size:30px;
+
+  cursor:pointer;
+}
+
+/* =========================
+   MOBILE MENU
+========================= */
+
+.mobile-menu{
+
+  position:absolute;
+
+  top:85px;
+
+  left:0;
+
+  width:100%;
+
+  background:white;
+
+  display:flex;
+
+  flex-direction:column;
+
+  padding:20px;
+
+  gap:12px;
+
+  border-top:1px solid #e5e7eb;
+}
+
+.mobile-link{
+
+  text-decoration:none;
+
+  color:#1e293b;
+
+  font-weight:700;
+
+  padding:12px;
+
+  border-radius:10px;
+}
+
+.mobile-link:hover{
+
+  background:#f1f5f9;
+}
+
+.mobile-register{
+
+  background:#0891b2;
+
+  color:white;
+
+  text-align:center;
+
+  padding:12px;
+
+  border-radius:999px;
+
+  text-decoration:none;
+
+  font-weight:700;
+}
+
+.mobile-logout{
+
+  border:none;
+
+  background:#f97316;
+
+  color:white;
+
+  padding:12px;
+
+  border-radius:999px;
+
+  font-weight:700;
+
+  cursor:pointer;
+}
+
+.mobile-dashboard {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:900px){
+
+  .navbar{
+
+    grid-template-columns:auto 1fr auto;
+
+    padding:0 20px;
+  }
+
+  .navbar-links{
+
+    display:none;
+  }
+
+  .navbar-right{
+
+    display:none;
+  }
+
+  .menu-btn{
+
+    display:block;
+  }
+
+  .logo{
+
+    height:48px;
+  }
+
+  .brand-text h1{
+
+    font-size:18px;
+  }
+
+  .brand-text p{
+
+    font-size:9px;
+  }
+}
+
+@media(max-width:500px){
+
+  .navbar{
+
+    height:75px;
+
+    padding:0 14px;
+  }
+
+  .logo{
+
+    height:40px;
+  }
+
+  .brand-text h1{
+
+    font-size:15px;
+  }
+
+  .brand-text p{
+
+    font-size:8px;
+  }
+}

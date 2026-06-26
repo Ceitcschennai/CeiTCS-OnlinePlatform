@@ -1,0 +1,243 @@
+/* Sidebar Styles */
+.sidebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  height: calc(100vh - 70px);
+  width: 250px;
+  background: #2c3e50;
+  color: white;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* Desktop Sidebar */
+.sidebar.desktop {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  height: calc(100vh - 70px);
+  transform: translateX(0);
+}
+
+.sidebar.desktop:not(.open) {
+  width: 60px;
+  overflow: visible;
+}
+
+.sidebar.desktop:not(.open) .nav-label,
+.sidebar.desktop:not(.open) .sidebar-header h3 {
+  display: none;
+}
+
+.sidebar.desktop:not(.open) .nav-link {
+  justify-content: center;
+  padding: 12px 8px;
+}
+
+.sidebar.desktop:not(.open) .nav-icon {
+  margin-right: 0;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.1);
+  min-height: 50px;
+}
+
+.sidebar-toggle-desktop,
+.sidebar-toggle-mobile {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.sidebar-toggle-desktop:hover,
+.sidebar-toggle-mobile:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: 0.2s ease;
+  border-radius: 0 20px 20px 0;
+  margin: 1px 0 1px 4px;
+}
+
+.nav-link:hover {
+  background: rgba(255, 133, 122, 0.1);
+  color: white;
+}
+
+.nav-link.active {
+  background: #ff857a;
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 133, 122, 0.3);
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+  margin-right: 12px;
+  min-width: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 220px;
+    top: 70px;
+    position: fixed;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.mobile .sidebar-header {
+    justify-content: flex-end;
+    padding: 10px;
+  }
+
+  .nav-link {
+    padding: 10px 12px;
+    margin: 1px 0 1px 4px;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .nav-link {
+    padding: 8px 10px;
+  }
+
+  .nav-icon {
+    margin-right: 8px;
+    font-size: 1.2rem;
+  }
+
+  .nav-label {
+    font-size: 0.9rem;
+  }
+
+  .sidebar-header {
+    padding: 8px;
+  }
+}
+
+/* Large Screens */
+@media (min-width: 1200px) {
+  .sidebar {
+    width: 250px;
+  }
+
+  .main-content.sidebar-open {
+    margin-left: 250px;
+  }
+
+  .sidebar.desktop:not(.open) {
+    width: 65px;
+  }
+
+  .main-content.sidebar-collapsed {
+    margin-left: 65px;
+  }
+}
+
+/* Accessibility */
+.nav-link:focus,
+.sidebar-toggle-desktop:focus,
+.sidebar-toggle-mobile:focus {
+  outline: none;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .nav-link,
+  .sidebar-toggle-desktop,
+  .sidebar-toggle-mobile {
+    transition: none !important;
+  }
+}
+
+/* Admin Dashboard Layout */
+.admin-dashboard-wrapper {
+  display: flex;
+}
+
+.admin-dashboard-content {
+  flex: 1;
+  padding: 30px;
+  transition: margin-left 0.3s;
+}
+
+.admin-dashboard-content.sidebar-open {
+  margin-left: 250px; /* width of sidebar */
+}
+
+/* Optional mobile handling */
+@media (max-width: 768px) {
+  .admin-dashboard-content.sidebar-open {
+    margin-left: 0;
+  }
+}

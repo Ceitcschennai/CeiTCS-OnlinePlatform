@@ -1,0 +1,17 @@
+.live-class-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.class-header {
+  background: #111;
+  color: white;
+  padding: 10px 20px;
+}

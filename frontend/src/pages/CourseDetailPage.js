@@ -114,6 +114,7 @@ const courses = [
     badge: "🤖 Future-Proof",
     subjectKeywords: ["ai", "artificial intelligence", "deep learning"],
   },
+<<<<<<< HEAD
   {
   id: 12,
   name: "Career Coaching",
@@ -480,6 +481,8 @@ const courses = [
 },
   
 
+=======
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
 ];
 
 // ─── Avatar color palette for backend faculty ────────────────────────────────

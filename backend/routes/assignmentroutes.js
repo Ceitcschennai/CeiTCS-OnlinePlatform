@@ -93,7 +93,10 @@ router.post('/', async (req, res) => {
       title,
       description,
       dueDate,
+<<<<<<< HEAD
       fromDate,
+=======
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
       priority,
       teacherId,
       teacherName,
@@ -112,7 +115,10 @@ router.post('/', async (req, res) => {
       subject,
       title,
       description,
+<<<<<<< HEAD
       fromDate,
+=======
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
       dueDate,
       priority: priority || 'Medium',
       teacherId,

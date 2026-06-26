@@ -18,13 +18,19 @@ const FacultyAssignments = () => {
     const [newAssignment, setNewAssignment] = useState({
         subject: '',
         title: '',
+<<<<<<< HEAD
         fromDate: '',
+=======
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
         dueDate: '',
         priority: 'Medium',
         description: '',
         totalStudents: 30
     });
+<<<<<<< HEAD
     const [pdfFileName, setPdfFileName] = useState('');
+=======
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
 
     const getTraineeData = () => {
         try {
@@ -130,8 +136,12 @@ const FacultyAssignments = () => {
 
             const data = await response.json();
             if (data.success) {
+<<<<<<< HEAD
                 setNewAssignment({ subject: '', title: '', fromDate: '', dueDate: '', priority: 'Medium', description: '', totalStudents: 30 });
                 setPdfFileName('');
+=======
+                setNewAssignment({ subject: '', title: '', dueDate: '', priority: 'Medium', description: '', totalStudents: 30 });
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
                 setShowCreateForm(false);
                 await fetchAssignments();
                 await fetchStats();
@@ -257,10 +267,13 @@ const FacultyAssignments = () => {
                                 <input type="text" value={newAssignment.title} onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })} className="assignment-controls__search-input" required />
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
+<<<<<<< HEAD
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>From Date *</label>
                                 <input type="date" value={newAssignment.fromDate} onChange={(e) => setNewAssignment({ ...newAssignment, fromDate: e.target.value })} className="assignment-controls__search-input" required />
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
+=======
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Due Date *</label>
                                 <input type="date" value={newAssignment.dueDate} onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })} className="assignment-controls__search-input" required />
                             </div>
@@ -279,11 +292,14 @@ const FacultyAssignments = () => {
                             <div style={{ marginBottom: '1.5rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Description</label>
                                 <textarea value={newAssignment.description} onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })} className="assignment-controls__search-input" rows="4" style={{ resize: 'vertical' }} placeholder="Provide detailed instructions for the assignment..." />
+<<<<<<< HEAD
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '0.5rem', gap: '0.5rem' }}>
                                     <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{pdfFileName || 'No file chosen'}</span>
                                     <input id="assignmentPdf" type="file" accept=".pdf,application/pdf" hidden onChange={(e) => setPdfFileName(e.target.files[0]?.name || '')} />
                                     <label htmlFor="assignmentPdf" className="assignment-controls__create-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>📤 Upload File</label>
                                 </div>
+=======
+>>>>>>> 76e0e2b040f956a52cde077d882a277d04a60c15
                             </div>
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button type="button" onClick={() => setShowCreateForm(false)} style={{ flex: 1, padding: '0.875rem', background: '#6b7280', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }} disabled={loading}>Cancel</button>

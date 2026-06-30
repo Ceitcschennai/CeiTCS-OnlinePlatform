@@ -3,10 +3,14 @@ const router = express.Router();
 const Assignment = require('../models/Assignment');
 const Employee = require('../models/Employee');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
+const os = require("os");
 
-const uploadDir = path.resolve('uploads/assignments/');
+const uploadDir =
+  process.env.VERCEL === "1"
+    ? path.join(os.tmpdir(), "uploads", "assignments")
+    : path.resolve("uploads/assignments/");
 fs.mkdirSync(uploadDir, { recursive: true });
 
 // Configure multer for file uploads

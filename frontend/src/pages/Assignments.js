@@ -42,12 +42,20 @@ const Assignments = () => {
     
     if (data.success) {
       // Transform backend data to match frontend structure
-      const transformedAssignments = data.assignments.map(assignment => ({
-        ...assignment,
-        id: assignment._id,
-        status: assignment.hasSubmitted ? 'Submitted' : 'Pending',
-        submittedDate: assignment.submissionDate ? assignment.submissionDate.split('T')[0] : null
-      }));
+      const transformedAssignments = data.assignments.map(assignment => {
+        const ownSubmission = (assignment.submissions || []).find(
+          sub => sub.studentId.toString() === studentId
+        );
+        return {
+          ...assignment,
+          id: assignment._id,
+          status: assignment.hasSubmitted ? 'Submitted' : 'Pending',
+          submittedDate: assignment.submissionDate ? assignment.submissionDate.split('T')[0] : null,
+          evaluated: ownSubmission?.evaluated || false,
+          marks: ownSubmission?.marks !== undefined && ownSubmission?.marks !== null ? ownSubmission.marks : null,
+          feedback: ownSubmission?.feedback || ''
+        };
+      });
       setAssignments(transformedAssignments);
     } else {
       console.error('Failed to fetch assignments:', data.message);
@@ -164,6 +172,28 @@ useEffect(() => {
       alert('Failed to submit assignment. Please try again.');
     } finally {
       setUploading({ ...uploading, [assignmentId]: false });
+    }
+  };
+
+  const handleDownloadPdf = async (assignmentId, fileName) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/assignments/${assignmentId}/download`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('Failed to download PDF');
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF');
     }
   };
 
@@ -363,6 +393,16 @@ useEffect(() => {
                   <div className={getStatusBadgeClass(assignment.status)}>
                     {assignment.status}
                   </div>
+
+                  {assignment.assignmentFile && (
+                    <button
+                      className="assignment-submit-btn"
+                      onClick={() => handleDownloadPdf(assignmentId, assignment.assignmentFile)}
+                      style={{ marginTop: '0.5rem' }}
+                    >
+                      Download Assignment PDF
+                    </button>
+                  )}
                 </div>
 
                 {assignment.status === 'Pending' && (
@@ -416,6 +456,46 @@ useEffect(() => {
                     }}>
                       <strong>Submitted file:</strong> {assignment.submissionFile}
                     </div>
+                    {assignment.evaluated ? (
+                      <div style={{ 
+                        marginTop: '0.5rem',
+                        padding: '0.75rem', 
+                        backgroundColor: '#ecfdf5', 
+                        borderRadius: '6px',
+                        fontSize: '0.875rem',
+                        color: '#065f46'
+                      }}>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <strong>✔ Evaluated</strong>
+                        </div>
+                        {assignment.marks !== null && assignment.marks !== undefined && (
+                          <div style={{ marginBottom: '0.25rem' }}>
+                            <strong>Marks:</strong> {assignment.marks}
+                          </div>
+                        )}
+                        {assignment.feedback && (
+                          <div style={{ marginBottom: '0.25rem' }}>
+                            <strong>Feedback:</strong> {assignment.feedback}
+                          </div>
+                        )}
+                        {assignment.evaluatedDate && (
+                          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            Evaluated on {new Date(assignment.evaluatedDate).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ 
+                        marginTop: '0.5rem',
+                        padding: '0.75rem', 
+                        backgroundColor: '#fffbeb', 
+                        borderRadius: '6px',
+                        fontSize: '0.875rem',
+                        color: '#92400e'
+                      }}>
+                        <strong>Waiting for Evaluation</strong>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

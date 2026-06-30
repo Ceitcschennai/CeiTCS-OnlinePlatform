@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import API_BASE_URL from '../config/api';
 import '../styles/assignments.css';
 
@@ -9,6 +9,8 @@ const FacultyAssignments = () => {
     const [filterSubject, setFilterSubject] = useState('All');
     const [sortBy, setSortBy] = useState('dueDate');
     const [loading, setLoading] = useState(false);
+    const [assignedCourses, setAssignedCourses] = useState([]);
+    const [assignedCoursesLoading, setAssignedCoursesLoading] = useState(false);
     const [stats, setStats] = useState({
         total: 0,
         totalSubmissions: 0,
@@ -17,14 +19,18 @@ const FacultyAssignments = () => {
     });
     const [newAssignment, setNewAssignment] = useState({
         subject: '',
-title: '',
+        title: '',
         fromDate: '',
         dueDate: '',
         priority: 'Medium',
         description: '',
-totalStudents: 30
+        totalStudents: 30,
+        courseCode: ''
     });
     const [pdfFileName, setPdfFileName] = useState('');
+    const [pdfFile, setPdfFile] = useState(null);
+    const [evaluatingSubmission, setEvaluatingSubmission] = useState(null);
+    const [evaluationForm, setEvaluationForm] = useState({ marks: '', feedback: '' });
 
     const getTraineeData = () => {
         try {
@@ -44,7 +50,35 @@ totalStudents: 30
     const traineeName = trainee?.firstName && trainee?.lastName
         ? `${trainee.salutation || ''} ${trainee.firstName} ${trainee.lastName}`.trim()
         : localStorage.getItem('teacherName') || localStorage.getItem('userName') || 'Trainee';
-    const traineeClass = (trainee?.class || localStorage.getItem('teacherClass') || localStorage.getItem('userClass') || '10').toString().replace(/^Class\s*/i, '');
+
+    // Fetch assigned courses for faculty
+    const fetchAssignedCourses = useCallback(async () => {
+        if (!traineeId) {
+            setAssignedCourses([]);
+            return;
+        }
+        setAssignedCoursesLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/teacher/${traineeId}/assigned-courses`);
+            const data = await response.json();
+            if (data.success) {
+                setAssignedCourses(data.courses || []);
+            } else {
+                setAssignedCourses([]);
+            }
+        } catch (error) {
+            console.error('Error fetching assigned courses:', error);
+            setAssignedCourses([]);
+        } finally {
+            setAssignedCoursesLoading(false);
+        }
+    }, [traineeId]);
+
+    useEffect(() => {
+        if (traineeId) {
+            fetchAssignedCourses();
+        }
+    }, [traineeId, fetchAssignedCourses]);
 
     const fetchAssignments = useCallback(async () => {
         try {
@@ -115,24 +149,40 @@ totalStudents: 30
 
         try {
             setLoading(true);
-            const assignmentData = {
-                ...newAssignment,
-                teacherId: traineeId,
-                teacherName: traineeName,
-                class: traineeClass
-            };
+            const formData = new FormData();
+            formData.append('subject', newAssignment.subject);
+            formData.append('title', newAssignment.title);
+            formData.append('description', newAssignment.description);
+            formData.append('courseCode', newAssignment.courseCode);
+            formData.append('fromDate', newAssignment.fromDate);
+            formData.append('dueDate', newAssignment.dueDate);
+            formData.append('priority', newAssignment.priority);
+            formData.append('totalStudents', newAssignment.totalStudents);
+            formData.append('teacherId', traineeId);
+            formData.append('teacherName', traineeName);
+            formData.append('status', 'Active');
+            if (pdfFile) {
+                formData.append('file', pdfFile);
+            }
+
+            console.log('===== CREATE ASSIGNMENT =====');
+            console.log('traineeId:', traineeId);
+            console.log('traineeName:', traineeName);
+            for (const [key, value] of formData.entries()) {
+                console.log(`${key}:`, value instanceof File ? `${value.name} (${value.size} bytes)` : value);
+            }
+            console.log('============================');
 
             const response = await fetch(`${API_BASE_URL}/api/assignments`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(assignmentData)
+                body: formData
             });
 
             const data = await response.json();
             if (data.success) {
-
-             setNewAssignment({ subject: '', title: '', fromDate:'', dueDate: '', priority: 'Medium', description: '', totalStudents: 30 });
+                setNewAssignment({ subject: '', title: '', fromDate:'', dueDate: '', priority: 'Medium', description: '', totalStudents: 30, courseCode: '' });
                 setPdfFileName('');
+                setPdfFile(null);
                 setShowCreateForm(false);
                 await fetchAssignments();
                 await fetchStats();
@@ -168,6 +218,78 @@ totalStudents: 30
             console.error('Error downloading submission:', error);
             alert('Failed to download file');
         }
+    };
+
+    const handleEvaluateClick = (submission) => {
+        setEvaluatingSubmission(submission);
+        setEvaluationForm({
+            marks: submission.marks !== undefined && submission.marks !== null ? submission.marks : '',
+            feedback: submission.feedback || ''
+        });
+    };
+
+    const handleEvaluateSubmit = async (assignment, submission) => {
+        console.log('===== EVALUATE =====');
+        console.log('assignment._id:', assignment._id);
+        console.log('submission._id:', submission._id);
+        console.log('marks:', evaluationForm.marks);
+        console.log('feedback:', evaluationForm.feedback);
+        console.log('teacherId:', traineeId);
+        console.log('======================');
+        if (evaluationForm.marks === '' || evaluationForm.marks === null || isNaN(evaluationForm.marks) || Number(evaluationForm.marks) < 0) {
+            alert('Marks must be a valid number (0 or greater).');
+            return;
+        }
+        if (!evaluationForm.feedback || evaluationForm.feedback.trim().length === 0) {
+            alert('Feedback is required.');
+            return;
+        }
+        if (evaluationForm.feedback.trim().length > 1000) {
+            alert('Feedback must be 1000 characters or less.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/assignments/${assignment._id}/evaluate/${submission._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    marks: Number(evaluationForm.marks),
+                    feedback: evaluationForm.feedback.trim(),
+                    teacherId: traineeId
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const updatedAssignments = assignments.map(a => {
+                    if (a._id === assignment._id) {
+                        const updatedSubmissions = a.submissions.map(s => {
+                            if (s._id === submission._id) {
+                                return { ...s, ...data.submission };
+                            }
+                            return s;
+                        });
+                        return { ...a, submissions: updatedSubmissions };
+                    }
+                    return a;
+                });
+                setAssignments(updatedAssignments);
+                setEvaluatingSubmission(null);
+                setEvaluationForm({ marks: '', feedback: '' });
+                alert('Evaluation saved successfully!');
+            } else {
+                alert('Failed to save evaluation: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error saving evaluation:', error);
+            alert('Failed to save evaluation.');
+        }
+    };
+
+    const handleEvaluateCancel = () => {
+        setEvaluatingSubmission(null);
+        setEvaluationForm({ marks: '', feedback: '' });
     };
 
     const getDaysUntilDue = (dueDate) => {
@@ -250,8 +372,32 @@ totalStudents: 30
                         <h2 style={{ marginBottom: '1.5rem', color: '#1f2937' }}>Create New Assignment</h2>
                         <form onSubmit={handleCreateAssignment}>
                             <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Course *</label>
+                                <select
+                                    value={newAssignment.courseCode}
+                                    onChange={(e) => {
+                                        const selectedCourse = assignedCourses.find(c => c.courseCode === e.target.value);
+                                        setNewAssignment({
+                                            ...newAssignment,
+                                            courseCode: e.target.value,
+                                            subject: selectedCourse ? selectedCourse.courseName : ''
+                                        });
+                                    }}
+                                    className="assignment-controls__filter-select"
+                                    required
+                                    disabled={assignedCoursesLoading || assignedCourses.length === 0}
+                                >
+                                    <option value="">Select Course</option>
+                                    {assignedCourses.map(course => (
+                                        <option key={course.courseCode} value={course.courseCode}>
+                                            {course.courseName} ({course.courseCode})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: '1rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Subject *</label>
-                                <input type="text" value={newAssignment.subject} onChange={(e) => setNewAssignment({ ...newAssignment, subject: e.target.value })} className="assignment-controls__search-input" required />
+                                <input type="text" value={newAssignment.subject} onChange={(e) => setNewAssignment({ ...newAssignment, subject: e.target.value })} className="assignment-controls__search-input" required readOnly={newAssignment.courseCode ? true : false} />
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Title *</label>
@@ -405,9 +551,11 @@ totalStudents: 30
             type="file"
             accept=".pdf,application/pdf"
             hidden
-            onChange={(e) =>
-                setPdfFileName(e.target.files[0]?.name || '')
-            }
+            onChange={(e) => {
+                const file = e.target.files[0];
+                setPdfFileName(file?.name || '');
+                setPdfFile(file || null);
+            }}
         />
 
         <label
@@ -503,15 +651,57 @@ totalStudents: 30
                                 {assignment.submissions.length > 0 && (
                                     <div className="assignment-card__submission">
                                         <h4 style={{ marginBottom: '1rem', color: '#1f2937', fontSize: '1rem' }}>Recent Submissions:</h4>
-                                        {assignment.submissions.slice(0, 3).map((submission, idx) => (
-                                            <div key={submission._id || idx} className="assignment-selected-file" style={{ marginBottom: '0.5rem' }}>
-                                                <div>
-                                                    <div className="assignment-selected-file__name">{submission.studentName}</div>
-                                                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{submission.fileName} • {submission.fileSize} MB • {new Date(submission.submittedDate).toLocaleDateString()}</div>
+                                        {assignment.submissions.slice(0, 3).map((submission, idx) => {
+                                            const isEvaluating = evaluatingSubmission && evaluatingSubmission._id === submission._id;
+                                            return (
+                                                <div key={submission._id || idx} className="assignment-selected-file" style={{ marginBottom: '0.5rem' }}>
+                                                    <div>
+                                                        <div className="assignment-selected-file__name">{submission.studentName}</div>
+                                                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{submission.fileName} • {submission.fileSize} MB • {new Date(submission.submittedDate).toLocaleDateString()}</div>
+                                                        {submission.evaluated && (
+                                                            <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.25rem' }}>
+                                                                Marks: {submission.marks} • Evaluated
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                                        <button onClick={() => handleDownloadSubmission(assignment, submission)} style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>Download</button>
+                                                        {!submission.evaluated && (
+                                                            <button onClick={() => handleEvaluateClick(submission)} style={{ background: '#059669', color: 'white', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>Evaluate</button>
+                                                        )}
+                                                    </div>
+                                                    {isEvaluating && (
+                                                        <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
+                                                            <div style={{ marginBottom: '0.5rem' }}>
+                                                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.25rem' }}>Marks *</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={evaluationForm.marks}
+                                                                    onChange={(e) => setEvaluationForm({ ...evaluationForm, marks: e.target.value })}
+                                                                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.875rem' }}
+                                                                    min="0"
+                                                                    required
+                                                                />
+                                                            </div>
+                                                            <div style={{ marginBottom: '0.75rem' }}>
+                                                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.25rem' }}>Feedback *</label>
+                                                                <textarea
+                                                                    value={evaluationForm.feedback}
+                                                                    onChange={(e) => setEvaluationForm({ ...evaluationForm, feedback: e.target.value })}
+                                                                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.875rem', minHeight: '5rem', resize: 'vertical' }}
+                                                                    maxLength="1000"
+                                                                    required
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                                <button onClick={() => handleEvaluateSubmit(assignment, submission)} style={{ background: '#059669', color: 'white', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '0.875rem', cursor: 'pointer' }}>Save</button>
+                                                                <button onClick={handleEvaluateCancel} style={{ background: '#6b7280', color: 'white', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '0.875rem', cursor: 'pointer' }}>Cancel</button>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <button onClick={() => handleDownloadSubmission(assignment, submission)} style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>Download</button>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                         {assignment.submissions.length > 3 && (
                                             <p style={{ fontSize: '0.875rem', color: '#6b7280', textAlign: 'center', margin: '0.5rem 0 0 0' }}>+{assignment.submissions.length - 3} more submissions</p>
                                         )}

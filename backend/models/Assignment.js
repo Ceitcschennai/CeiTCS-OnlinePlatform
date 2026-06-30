@@ -25,6 +25,25 @@ const submissionSchema = new mongoose.Schema({
   submittedDate: {
     type: Date,
     default: Date.now
+  },
+  marks: {
+    type: Number,
+    default: null
+  },
+  feedback: {
+    type: String,
+    default: ""
+  },
+  evaluated: {
+    type: Boolean,
+    default: false
+  },
+  evaluatedDate: {
+    type: Date
+  },
+  evaluatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Teacher'
   }
 });
 
@@ -62,13 +81,24 @@ description: {
     type: String,
     required: true
   },
+  courseCode: {
+    type: String
+  },
   class: {
-    type: String,
-    required: true
+    type: String
   },
   totalStudents: {
     type: Number,
     default: 30
+  },
+  assignmentFile: {
+    type: String
+  },
+  assignmentFilePath: {
+    type: String
+  },
+  assignmentFileSize: {
+    type: String
   },
   submissions: [submissionSchema],
   status: {

@@ -8,7 +8,7 @@ const Assignments = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterSubject, setFilterSubject] = useState('All');
-  const [sortBy, setSortBy] = useState('dueDate');
+  const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState({});
 
@@ -43,17 +43,34 @@ const Assignments = () => {
     if (data.success) {
       // Transform backend data to match frontend structure
       const transformedAssignments = data.assignments.map(assignment => {
-        const ownSubmission = (assignment.submissions || []).find(
+        const studentSubmissions = (assignment.submissions || []).filter(
           sub => sub.studentId.toString() === studentId
         );
+        const latestSubmission = studentSubmissions.length > 0
+          ? studentSubmissions[studentSubmissions.length - 1]
+          : null;
+
         return {
           ...assignment,
           id: assignment._id,
-          status: assignment.hasSubmitted ? 'Submitted' : 'Pending',
-          submittedDate: assignment.submissionDate ? assignment.submissionDate.split('T')[0] : null,
-          evaluated: ownSubmission?.evaluated || false,
-          marks: ownSubmission?.marks !== undefined && ownSubmission?.marks !== null ? ownSubmission.marks : null,
-          feedback: ownSubmission?.feedback || ''
+          status: latestSubmission
+            ? (latestSubmission.resubmissionStatus === 'Resubmission Required' ? 'Resubmission Required' : 'Submitted')
+            : 'Pending',
+          submittedDate: latestSubmission?.submittedDate ? latestSubmission.submittedDate.split('T')[0] : null,
+          evaluated: latestSubmission?.evaluated || false,
+          marks: latestSubmission?.marks !== undefined && latestSubmission?.marks !== null ? latestSubmission.marks : null,
+          feedback: latestSubmission?.feedback || '',
+          submissionHistory: studentSubmissions.map(sub => ({
+            attemptNumber: sub.attemptNumber || 1,
+            submittedDate: sub.submittedDate,
+            fileName: sub.fileName,
+            fileSize: sub.fileSize,
+            marks: sub.marks,
+            feedback: sub.feedback,
+            evaluated: sub.evaluated,
+            evaluatedDate: sub.evaluatedDate,
+            resubmissionStatus: sub.resubmissionStatus || 'Pending'
+          }))
         };
       });
       setAssignments(transformedAssignments);
@@ -91,17 +108,19 @@ useEffect(() => {
     });
 
     // Sort assignments
-    filtered.sort((a, b) => {
-      if (sortBy === 'dueDate') {
-        return new Date(a.dueDate) - new Date(b.dueDate);
-      } else if (sortBy === 'priority') {
-        const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      } else if (sortBy === 'subject') {
-        return a.subject.localeCompare(b.subject);
-      }
-      return 0;
-    });
+    if (sortBy !== 'newest') {
+      filtered.sort((a, b) => {
+        if (sortBy === 'dueDate') {
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        } else if (sortBy === 'priority') {
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          return priorityOrder[b.priority] - priorityOrder[a.priority];
+        } else if (sortBy === 'subject') {
+          return a.subject.localeCompare(b.subject);
+        }
+        return 0;
+      });
+    }
 
     return filtered;
   }, [assignments, searchTerm, filterStatus, filterSubject, sortBy]);
@@ -214,6 +233,8 @@ useEffect(() => {
         return `${baseClass} assignment-status-badge--pending`;
       case 'In Progress':
         return `${baseClass} assignment-status-badge--progress`;
+      case 'Resubmission Required':
+        return `${baseClass} assignment-status-badge--overdue`;
       default:
         return baseClass;
     }
@@ -231,6 +252,23 @@ useEffect(() => {
       default:
         return baseClass;
     }
+  };
+
+  const getTimeAgo = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return `${Math.floor(diffDays / 7)} weeks ago`;
   };
 
   // Statistics
@@ -313,6 +351,7 @@ useEffect(() => {
             onChange={(e) => setSortBy(e.target.value)}
             className="assignment-controls__filter-select"
           >
+            <option value="newest">Newest First</option>
             <option value="dueDate">Sort by Due Date</option>
             <option value="priority">Sort by Priority</option>
             <option value="subject">Sort by Subject</option>
@@ -346,7 +385,7 @@ useEffect(() => {
             const assignmentId = assignment.id || assignment._id;
             const isUploading = uploading[assignmentId];
 
-            return (
+return (
               <div
                 key={assignmentId}
                 className={`assignment-card ${isOverdue ? 'assignment-card--overdue' : ''} ${isDueSoon ? 'assignment-card--due-soon' : ''}`}
@@ -363,8 +402,20 @@ useEffect(() => {
                 <div className="assignment-card__content">
                   <h3 className="assignment-card__title">{assignment.title}</h3>
                   <p className="assignment-card__description">{assignment.description}</p>
-
+                  {assignment.teacherName && (
+                    <div className="assignment-card__faculty" style={{ fontSize: '0.875rem', color: '#4b5563', marginBottom: '0.5rem' }}>
+                      Faculty: {assignment.teacherName}
+                    </div>
+                  )}
                   <div className="assignment-card__meta">
+                    {(() => {
+                      const timeAgo = getTimeAgo(assignment.createdAt || assignment.createdDate);
+                      return timeAgo ? (
+                        <div className="assignment-card__posted" style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                          Posted {timeAgo}
+                        </div>
+                      ) : null;
+                    })()}
                     <div className="assignment-card__due-date">
                       <strong>Due:</strong> {new Date(assignment.dueDate).toLocaleDateString()}
                       {isOverdue && (
@@ -377,16 +428,6 @@ useEffect(() => {
                           ({daysUntilDue} days left)
                         </span>
                       )}
-                    </div>
-
-                    {assignment.submittedDate && (
-                      <div className="assignment-card__submitted-date">
-                        <strong>Submitted:</strong> {new Date(assignment.submittedDate).toLocaleDateString()}
-                      </div>
-                    )}
-
-                    <div className="assignment-card__created-date">
-                      <strong>Created:</strong> {new Date(assignment.createdAt || assignment.createdDate).toLocaleDateString()}
                     </div>
                   </div>
 
@@ -405,95 +446,131 @@ useEffect(() => {
                   )}
                 </div>
 
-                {assignment.status === 'Pending' && (
-                  <div className="assignment-card__submission">
-                    <div className="assignment-file-upload">
-                      <input
-                        type="file"
-                        id={`file-${assignmentId}`}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt,.ppt,.pptx,.xls,.xlsx"
-                        onChange={(e) => handleFileChange(e, assignmentId)}
-                        className="assignment-file-upload__input"
-                        disabled={isUploading}
-                      />
-                      <label
-                        htmlFor={`file-${assignmentId}`}
-                        className={`assignment-file-upload__label ${isUploading ? 'disabled' : ''}`}
-                      >
-                        {isUploading ? 'Uploading...' : 'Choose File'}
-                      </label>
-                    </div>
+{(assignment.status === 'Pending' || (assignment.status === 'Resubmission Required' && assignment.submissionHistory.length < 3)) && (
+                   <div className="assignment-card__submission">
+                     <div className="assignment-file-upload">
+                       <input
+                         type="file"
+                         id={`file-${assignmentId}`}
+                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt,.ppt,.pptx,.xls,.xlsx"
+                         onChange={(e) => handleFileChange(e, assignmentId)}
+                         className="assignment-file-upload__input"
+                         disabled={isUploading}
+                       />
+                       <label
+                         htmlFor={`file-${assignmentId}`}
+                         className={`assignment-file-upload__label ${isUploading ? 'disabled' : ''}`}
+                       >
+                         {isUploading ? 'Uploading...' : 'Choose File'}
+                       </label>
+                     </div>
 
-                    {selectedFiles[assignmentId] && (
-                      <div className="assignment-selected-file">
-                        <span className="assignment-selected-file__name">
-                          {selectedFiles[assignmentId].name}
-                        </span>
-                        <span className="assignment-selected-file__size">
-                          ({(selectedFiles[assignmentId].size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                    )}
+                     {selectedFiles[assignmentId] && (
+                       <div className="assignment-selected-file">
+                         <span className="assignment-selected-file__name">
+                           {selectedFiles[assignmentId].name}
+                         </span>
+                         <span className="assignment-selected-file__size">
+                           ({(selectedFiles[assignmentId].size / 1024 / 1024).toFixed(2)} MB)
+                         </span>
+                       </div>
+                     )}
 
-                    <button
-                      className="assignment-submit-btn"
-                      onClick={() => handleSubmit(assignmentId)}
-                      disabled={!selectedFiles[assignmentId] || isUploading}
-                    >
-                      {isUploading ? 'Submitting...' : 'Submit Assignment'}
-                    </button>
-                  </div>
-                )}
+                     <button
+                       className="assignment-submit-btn"
+                       onClick={() => handleSubmit(assignmentId)}
+                       disabled={!selectedFiles[assignmentId] || isUploading}
+                     >
+                       {isUploading ? 'Submitting...' : (assignment.status === 'Resubmission Required' ? 'Upload Revised Assignment' : 'Submit Assignment')}
+                     </button>
+                   </div>
+                 )}
 
-                {assignment.status === 'Submitted' && assignment.submissionFile && (
-                  <div className="assignment-card__submitted-info">
-                    <div style={{ 
-                      padding: '0.75rem', 
-                      backgroundColor: '#f0f9ff', 
-                      borderRadius: '6px',
-                      fontSize: '0.875rem',
-                      color: '#0369a1'
-                    }}>
-                      <strong>Submitted file:</strong> {assignment.submissionFile}
-                    </div>
-                    {assignment.evaluated ? (
-                      <div style={{ 
-                        marginTop: '0.5rem',
-                        padding: '0.75rem', 
-                        backgroundColor: '#ecfdf5', 
-                        borderRadius: '6px',
-                        fontSize: '0.875rem',
-                        color: '#065f46'
-                      }}>
-                        <div style={{ marginBottom: '0.25rem' }}>
-                          <strong>✔ Evaluated</strong>
-                        </div>
-                        {assignment.marks !== null && assignment.marks !== undefined && (
-                          <div style={{ marginBottom: '0.25rem' }}>
-                            <strong>Marks:</strong> {assignment.marks}
+                 {assignment.status === 'Resubmission Required' && assignment.submissionHistory.length >= 3 && (
+                   <div className="assignment-card__submission">
+                     <div style={{ padding: '0.75rem', backgroundColor: '#fef3c7', borderRadius: '6px', fontSize: '0.875rem', color: '#92400e' }}>
+                       Maximum submission attempts reached.
+                     </div>
+                   </div>
+                 )}
+
+{(assignment.status === 'Submitted' || assignment.status === 'Resubmission Required') && (
+                   <div className="assignment-card__submitted-info">
+                     {assignment.status === 'Resubmission Required' && (
+                       <div style={{
+                         padding: '0.75rem',
+                         backgroundColor: '#fef3c7',
+                         borderRadius: '6px',
+                         fontSize: '0.875rem',
+                         color: '#92400e',
+                         marginBottom: '0.5rem'
+                       }}>
+                         <strong>Resubmission Required</strong>
+                       </div>
+                     )}
+
+                     {assignment.feedback && (
+                       <div style={{
+                         padding: '0.75rem',
+                         backgroundColor: '#fffbeb',
+                         borderRadius: '6px',
+                         fontSize: '0.875rem',
+                         color: '#92400e',
+                         marginBottom: '0.5rem'
+                       }}>
+                         <div style={{ marginBottom: '0.25rem' }}>
+                           <strong>Faculty Feedback:</strong>
+                         </div>
+                         {assignment.feedback}
+                       </div>
+                     )}
+
+                     {assignment.submissionHistory && assignment.submissionHistory.length > 0 && (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <strong style={{ fontSize: '0.875rem', color: '#1f2937' }}>Submission History</strong>
+                        {assignment.submissionHistory.map((submission, idx) => (
+                          <div key={idx} style={{
+                            marginTop: '0.5rem',
+                            padding: '0.75rem',
+                            backgroundColor: '#f9fafb',
+                            borderRadius: '6px',
+                            border: '1px solid #e5e7eb',
+                            fontSize: '0.875rem'
+                          }}>
+                            <div style={{ marginBottom: '0.25rem' }}>
+                              <strong>Attempt {submission.attemptNumber}</strong>
+                              <span style={{ marginLeft: '0.5rem', color: '#6b7280', fontSize: '0.75rem' }}>
+                                {submission.submittedDate ? new Date(submission.submittedDate).toLocaleDateString() : ''}
+                              </span>
+                            </div>
+                            <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                              File: {submission.fileName}
+                            </div>
+                            {submission.evaluated && (
+                              <>
+                                <div style={{ marginTop: '0.25rem', color: '#065f46' }}>
+                                  <strong>Marks:</strong> {submission.marks}
+                                </div>
+                                <div style={{ marginTop: '0.25rem', color: '#065f46', fontSize: '0.75rem' }}>
+                                  <strong>Feedback:</strong> {submission.feedback}
+                                </div>
+                                <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6b7280' }}>
+                                  Evaluated on {submission.evaluatedDate ? new Date(submission.evaluatedDate).toLocaleDateString() : ''}
+                                </div>
+                                <div style={{ marginTop: '0.25rem' }}>
+                                  <span className={`status-badge ${submission.resubmissionStatus === 'Resubmission Required' ? 'status-overdue' : 'status-completed'}`}>
+                                    {submission.resubmissionStatus}
+                                  </span>
+                                </div>
+                              </>
+                            )}
+                            {!submission.evaluated && (
+                              <div style={{ marginTop: '0.25rem', color: '#92400e', fontSize: '0.75rem' }}>
+                                Waiting for Evaluation
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {assignment.feedback && (
-                          <div style={{ marginBottom: '0.25rem' }}>
-                            <strong>Feedback:</strong> {assignment.feedback}
-                          </div>
-                        )}
-                        {assignment.evaluatedDate && (
-                          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                            Evaluated on {new Date(assignment.evaluatedDate).toLocaleDateString()}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={{ 
-                        marginTop: '0.5rem',
-                        padding: '0.75rem', 
-                        backgroundColor: '#fffbeb', 
-                        borderRadius: '6px',
-                        fontSize: '0.875rem',
-                        color: '#92400e'
-                      }}>
-                        <strong>Waiting for Evaluation</strong>
+                        ))}
                       </div>
                     )}
                   </div>

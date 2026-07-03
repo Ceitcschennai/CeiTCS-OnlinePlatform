@@ -99,15 +99,37 @@ router.get('/student/:studentId', async (req, res) => {
 
     // Add submission status for this student
     const assignmentsWithStatus = assignments.map(assignment => {
-      const studentSubmission = assignment.submissions.find(
+      const studentSubmissions = assignment.submissions.filter(
         sub => sub.studentId.toString() === studentId
       );
-      
+      const latestSubmission = studentSubmissions.length > 0
+        ? studentSubmissions[studentSubmissions.length - 1]
+        : null;
+
+      const submissionHistory = studentSubmissions.map(sub => ({
+        attemptNumber: sub.attemptNumber || 1,
+        submittedDate: sub.submittedDate,
+        fileName: sub.fileName,
+        fileSize: sub.fileSize,
+        marks: sub.marks,
+        feedback: sub.feedback,
+        evaluated: sub.evaluated,
+        evaluatedDate: sub.evaluatedDate,
+        resubmissionStatus: sub.resubmissionStatus || 'Pending'
+      }));
+
       return {
         ...assignment.toObject(),
-        hasSubmitted: !!studentSubmission,
-        submissionDate: studentSubmission?.submittedDate,
-        submissionFile: studentSubmission?.fileName
+        hasSubmitted: studentSubmissions.length > 0,
+        submissionDate: latestSubmission?.submittedDate,
+        submissionFile: latestSubmission?.fileName,
+        evaluated: latestSubmission?.evaluated || false,
+        marks: latestSubmission?.marks,
+        feedback: latestSubmission?.feedback,
+        status: latestSubmission
+          ? (latestSubmission.resubmissionStatus === 'Resubmission Required' ? 'Resubmission Required' : 'Submitted')
+          : 'Pending',
+        submissionHistory
       };
     });
 
@@ -210,16 +232,26 @@ router.post('/:id/submit', upload.single('file'), async (req, res) => {
       });
     }
 
-    // Check if student already submitted
-    const existingSubmission = assignment.submissions.find(
+    // Check if student can submit again
+    const studentSubmissions = assignment.submissions.filter(
       sub => sub.studentId.toString() === studentId
     );
 
-    if (existingSubmission) {
+    if (studentSubmissions.length >= 3) {
       return res.status(400).json({
         success: false,
-        message: 'Assignment already submitted'
+        message: 'Maximum submission attempts reached.'
       });
+    }
+
+    if (studentSubmissions.length > 0) {
+      const latestSubmission = studentSubmissions[studentSubmissions.length - 1];
+      if (latestSubmission.resubmissionStatus !== 'Resubmission Required') {
+        return res.status(400).json({
+          success: false,
+          message: 'Assignment already submitted'
+        });
+      }
     }
 
     // Add submission
@@ -228,7 +260,9 @@ router.post('/:id/submit', upload.single('file'), async (req, res) => {
       studentName,
       fileName: req.file.originalname,
       fileSize: (req.file.size / (1024 * 1024)).toFixed(2), // Convert to MB
-      filePath: req.file.path
+      filePath: req.file.path,
+      attemptNumber: studentSubmissions.length + 1,
+      resubmissionStatus: 'Pending'
     };
 
     assignment.submissions.push(submission);
@@ -318,7 +352,7 @@ router.put('/:assignmentId/evaluate/:submissionId', async (req, res) => {
   console.log('req.body:', req.body);
   try {
     const { assignmentId, submissionId } = req.params;
-    const { marks, feedback, teacherId } = req.body;
+    const { marks, feedback, teacherId, resubmissionStatus } = req.body;
 
     const assignment = await Assignment.findById(assignmentId);
     console.log('assignment found?', !!assignment);
@@ -354,6 +388,7 @@ router.put('/:assignmentId/evaluate/:submissionId', async (req, res) => {
     submission.evaluated = true;
     submission.evaluatedDate = new Date();
     submission.evaluatedBy = teacherId;
+    submission.resubmissionStatus = resubmissionStatus === 'Resubmission Required' ? 'Resubmission Required' : 'Passed';
 
     try {
       await assignment.save();

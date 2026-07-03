@@ -30,7 +30,7 @@ const FacultyAssignments = () => {
     const [pdfFileName, setPdfFileName] = useState('');
     const [pdfFile, setPdfFile] = useState(null);
     const [evaluatingSubmission, setEvaluatingSubmission] = useState(null);
-    const [evaluationForm, setEvaluationForm] = useState({ marks: '', feedback: '' });
+    const [evaluationForm, setEvaluationForm] = useState({ marks: '', feedback: '', resubmissionStatus: 'Passed' });
 
     const getTraineeData = () => {
         try {
@@ -224,7 +224,8 @@ const FacultyAssignments = () => {
         setEvaluatingSubmission(submission);
         setEvaluationForm({
             marks: submission.marks !== undefined && submission.marks !== null ? submission.marks : '',
-            feedback: submission.feedback || ''
+            feedback: submission.feedback || '',
+            resubmissionStatus: submission.resubmissionStatus === 'Resubmission Required' ? 'Resubmission Required' : 'Passed'
         });
     };
 
@@ -234,6 +235,7 @@ const FacultyAssignments = () => {
         console.log('submission._id:', submission._id);
         console.log('marks:', evaluationForm.marks);
         console.log('feedback:', evaluationForm.feedback);
+        console.log('resubmissionStatus:', evaluationForm.resubmissionStatus);
         console.log('teacherId:', traineeId);
         console.log('======================');
         if (evaluationForm.marks === '' || evaluationForm.marks === null || isNaN(evaluationForm.marks) || Number(evaluationForm.marks) < 0) {
@@ -248,6 +250,10 @@ const FacultyAssignments = () => {
             alert('Feedback must be 1000 characters or less.');
             return;
         }
+        if (!evaluationForm.resubmissionStatus || (evaluationForm.resubmissionStatus !== 'Passed' && evaluationForm.resubmissionStatus !== 'Resubmission Required')) {
+            alert('Evaluation Result is required.');
+            return;
+        }
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/assignments/${assignment._id}/evaluate/${submission._id}`, {
@@ -256,6 +262,7 @@ const FacultyAssignments = () => {
                 body: JSON.stringify({
                     marks: Number(evaluationForm.marks),
                     feedback: evaluationForm.feedback.trim(),
+                    resubmissionStatus: evaluationForm.resubmissionStatus,
                     teacherId: traineeId
                 })
             });
@@ -276,7 +283,7 @@ const FacultyAssignments = () => {
                 });
                 setAssignments(updatedAssignments);
                 setEvaluatingSubmission(null);
-                setEvaluationForm({ marks: '', feedback: '' });
+                setEvaluationForm({ marks: '', feedback: '', resubmissionStatus: 'Passed' });
                 alert('Evaluation saved successfully!');
             } else {
                 alert('Failed to save evaluation: ' + data.message);
@@ -289,7 +296,7 @@ const FacultyAssignments = () => {
 
     const handleEvaluateCancel = () => {
         setEvaluatingSubmission(null);
-        setEvaluationForm({ marks: '', feedback: '' });
+        setEvaluationForm({ marks: '', feedback: '', resubmissionStatus: 'Passed' });
     };
 
     const getDaysUntilDue = (dueDate) => {
@@ -307,6 +314,23 @@ const FacultyAssignments = () => {
             case 'Low': return `${baseClass} assignment-priority-indicator--low`;
             default: return baseClass;
         }
+    };
+
+    const getTimeAgo = (dateString) => {
+        if (!dateString) return null;
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins} minutes ago`;
+        if (diffHours < 24) return `${diffHours} hours ago`;
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        return `${Math.floor(diffDays / 7)} weeks ago`;
     };
 
     return (
@@ -632,16 +656,23 @@ const FacultyAssignments = () => {
                                     <div className="assignment-card__subject-badge">{assignment.subject}</div>
                                     <div className={getPriorityClass(assignment.priority)}>{assignment.priority}</div>
                                 </div>
-                                <div className="assignment-card__content">
+<div className="assignment-card__content">
                                     <h3 className="assignment-card__title">{assignment.title}</h3>
                                     <p className="assignment-card__description">{assignment.description}</p>
-                                    <div className="assignment-card__meta">
+<div className="assignment-card__meta">
+                                        {(() => {
+                                            const timeAgo = getTimeAgo(assignment.createdAt);
+                                            return timeAgo ? (
+                                                <div className="assignment-card__posted" style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                                                    Posted {timeAgo}
+                                                </div>
+                                            ) : null;
+                                        })()}
                                         <div className="assignment-card__due-date">
                                             <strong>Due:</strong> {new Date(assignment.dueDate).toLocaleDateString()}
                                             {isOverdue && <span className="assignment-card__overdue-text">({Math.abs(daysUntilDue)} days overdue)</span>}
                                             {isDueSoon && !isOverdue && <span className="assignment-card__due-soon-text">({daysUntilDue} days left)</span>}
                                         </div>
-                                        <div className="assignment-card__due-date"><strong>Created:</strong> {new Date(assignment.createdAt).toLocaleDateString()}</div>
                                         <div className="assignment-card__due-date"><strong>Submissions:</strong> {assignment.submissions.length}/{assignment.totalStudents} ({submissionRate}%)</div>
                                     </div>
                                     <div className={`assignment-status-badge ${submissionRate === 100 ? 'assignment-status-badge--submitted' : submissionRate > 50 ? 'assignment-status-badge--progress' : 'assignment-status-badge--pending'}`}>
@@ -692,6 +723,31 @@ const FacultyAssignments = () => {
                                                                     maxLength="1000"
                                                                     required
                                                                 />
+                                                            </div>
+                                                            <div style={{ marginBottom: '0.75rem' }}>
+                                                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.25rem' }}>Evaluation Result *</label>
+                                                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+                                                                        <input
+                                                                            type="radio"
+                                                                            name="resubmissionStatus"
+                                                                            value="Passed"
+                                                                            checked={evaluationForm.resubmissionStatus === 'Passed'}
+                                                                            onChange={(e) => setEvaluationForm({ ...evaluationForm, resubmissionStatus: e.target.value })}
+                                                                        />
+                                                                        Passed
+                                                                    </label>
+                                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+                                                                        <input
+                                                                            type="radio"
+                                                                            name="resubmissionStatus"
+                                                                            value="Resubmission Required"
+                                                                            checked={evaluationForm.resubmissionStatus === 'Resubmission Required'}
+                                                                            onChange={(e) => setEvaluationForm({ ...evaluationForm, resubmissionStatus: e.target.value })}
+                                                                        />
+                                                                        Resubmission Required
+                                                                    </label>
+                                                                </div>
                                                             </div>
                                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                                                 <button onClick={() => handleEvaluateSubmit(assignment, submission)} style={{ background: '#059669', color: 'white', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '0.875rem', cursor: 'pointer' }}>Save</button>

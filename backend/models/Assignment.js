@@ -44,6 +44,10 @@ const submissionSchema = new mongoose.Schema({
   evaluatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Teacher'
+  },
+  resubmissionStatus: {
+    type: String,
+    default: 'Pending'
   }
 });
 

@@ -7,7 +7,7 @@ const FacultyAssignments = () => {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSubject, setFilterSubject] = useState('All');
-    const [sortBy, setSortBy] = useState('dueDate');
+    const [sortBy, setSortBy] = useState('newest');
     const [loading, setLoading] = useState(false);
     const [assignedCourses, setAssignedCourses] = useState([]);
     const [assignedCoursesLoading, setAssignedCoursesLoading] = useState(false);
@@ -128,6 +128,7 @@ const FacultyAssignments = () => {
         });
 
         filtered.sort((a, b) => {
+            if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
             if (sortBy === 'dueDate') return new Date(a.dueDate) - new Date(b.dueDate);
             if (sortBy === 'priority') {
                 const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
@@ -379,6 +380,7 @@ const FacultyAssignments = () => {
                         {subjects.map(subject => (<option key={subject} value={subject}>{subject}</option>))}
                     </select>
                     <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="assignment-controls__filter-select">
+                        <option value="newest">Newest First</option>
                         <option value="dueDate">Sort by Due Date</option>
                         <option value="priority">Sort by Priority</option>
                         <option value="subject">Sort by Subject</option>

@@ -19,7 +19,7 @@ function Login() {
     setLoading(true);
 
     if (role === "admin") {
-      if (email === "admin@onlinetuition.com" && password === "admin123") {
+      if (email === "mohanraj@ceitcs.com" && password === "Rishiindia@27") {
         localStorage.clear();
         localStorage.setItem("user", JSON.stringify({ email, role: "admin" }));
         localStorage.setItem("userRole", "admin");
@@ -218,12 +218,12 @@ function Login() {
                 `Login as ${roleLabels[role]}`
               )}
             </button>
-
+{/* 
             {role === "admin" && (
               <p className="login-hint">
                 Default: admin@onlinetuition.com / admin123
               </p>
-            )}
+            )} */}
           </form>
 
           {/* ── Register Link ── */}

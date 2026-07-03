@@ -95,7 +95,7 @@ router.get('/student/:studentId', async (req, res) => {
     }
 
     const assignments = await Assignment.find(query)
-      .sort({ dueDate: 1 });
+      .sort({ createdAt: -1 });
 
     // Add submission status for this student
     const assignmentsWithStatus = assignments.map(assignment => {

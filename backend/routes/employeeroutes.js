@@ -138,7 +138,7 @@
       } = req.body;
 
       // ✅ Validate required fields
-      if (!firstName || !lastName || !email || !password) {
+      if (!firstName || !lastName || !email || !password || !skills) {
         return res.status(400).json({ message: "Missing required fields" });
       }
      
@@ -183,8 +183,11 @@
         return res.status(400).json({ message: "Last Name can contain only letters." });
       }
 
-     
-      
+      // ✅ Skills validation
+      if (!skills || skills.trim().length === 0) {
+        return res.status(400).json({ message: "Subject / Skills is required." });
+      }
+
       // ✅ Check if email already exists
       const exists = await Employee.findOne({ email }).maxTimeMS(8000);
       if (exists) {

@@ -8,67 +8,62 @@ const protect = async (req, res, next) => {
 try {
 let token;
 
-```
 if (
-  req.headers.authorization &&
-  req.headers.authorization.startsWith("Bearer ")
+req.headers.authorization &&
+req.headers.authorization.startsWith("Bearer ")
 ) {
-  token = req.headers.authorization.split(" ")[1];
+token = req.headers.authorization.split(" ")[1];
 
-  const decoded = jwt.verify(
-    token,
-    process.env.JWT_SECRET
-  );
+const decoded = jwt.verify(
+token,
+process.env.JWT_SECRET
+);
 
-  let user;
+let user;
 
-  switch (decoded.role) {
-    case "employee":
-      user = await Employee.findById(decoded.id).select("-password");
-      break;
+switch (decoded.role) {
+case "employee":
+user = await Employee.findById(decoded.id).select("-password");
+break;
 
-    case "teacher":
-      user = await Teacher.findById(decoded.id).select("-password");
-      break;
+case "teacher":
+user = await Teacher.findById(decoded.id).select("-password");
+break;
 
-    case "admin":
-      user = await Admin.findById(decoded.id).select("-password");
-      break;
+case "admin":
+user = await Admin.findById(decoded.id).select("-password");
+break;
 
-    default:
-      return res.status(401).json({
-        success: false,
-        message: "Invalid user role",
-      });
-  }
+default:
+return res.status(401).json({
+success: false,
+message: "Invalid user role",
+});
+}
 
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: "User not found",
-    });
-  }
+if (!user) {
+return res.status(401).json({
+success: false,
+message: "User not found",
+});
+}
 
-  req.user = user;
-  return next();
+req.user = user;
+return next();
 }
 
 return res.status(401).json({
-  success: false,
-  message: "No token provided",
+success: false,
+message: "No token provided",
 });
-```
 
 } catch (error) {
 console.error("AUTH ERROR:", error);
 
-```
 return res.status(401).json({
-  success: false,
-  message: "Token is invalid or expired",
+success: false,
+message: "Token is invalid or expired",
 });
-```
-
 }
 };
 

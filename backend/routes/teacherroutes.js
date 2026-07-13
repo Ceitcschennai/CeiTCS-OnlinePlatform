@@ -130,7 +130,7 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const {
+const {
         salutation,
         firstName,
         lastName,
@@ -142,6 +142,34 @@ router.post(
         otherAchievements
       } = req.body;
 
+
+      if (!firstName || firstName.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          message: "First Name is required"
+        });
+      }
+
+      if (!lastName || lastName.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          message: "Last Name is required"
+        });
+      }
+
+      if (!mobile || mobile.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          message: "Mobile Number is required"
+        });
+      }
+
+      if (!preferredSubject || preferredSubject.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          message: "Preferred Subject is required"
+        });
+      }
 
       const degreeFile = req.files?.degreeCertificate?.[0];
       const badgeFile = req.files?.badgeCertificate?.[0];
@@ -183,6 +211,15 @@ router.post(
         return res.status(400).json({
           success: false,
           message: "File size exceeds 5 MB limit."
+        });
+      }
+
+      // Conditional validation: Achievement Document required when Other Achievements is "Yes"
+      const hasAchievements = otherAchievements && otherAchievements.toLowerCase() === "yes";
+      if (hasAchievements && !achievementFile) {
+        return res.status(400).json({
+          success: false,
+          message: "Achievement Document is required when Other Achievements is provided."
         });
       }
 

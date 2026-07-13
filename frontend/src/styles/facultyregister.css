@@ -212,6 +212,27 @@
   gap: 14px;
 }
 
+/* Name fields grid layout */
+.name-fields {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.name-fields input {
+  width: 100%;
+  padding: 14px 15px;
+  border-radius: 10px;
+  border: 1.5px solid #BAE6FD;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #F0FDFA;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: 'DM Sans', sans-serif;
+}
+
 .mobile-field-row {
   display: flex;
   align-items: flex-start;
@@ -224,6 +245,22 @@
 
 .mobile-field-row input {
   flex: 1;
+}
+
+/* Name fields with labels */
+.name-fields .reg-field {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.name-fields .reg-field label {
+  margin-bottom: 7px;
+}
+
+/* Mobile number field reset */
+.mobile-number-field {
+  margin-bottom: 0;
 }
 
 /* ── Field ── */
@@ -239,10 +276,37 @@
   margin-bottom: 7px;
 }
 
+.reg-field input,
+.reg-field select {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 12px;
+  border: 1.5px solid #BAE6FD;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #F0FDFA;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.reg-field input:focus,
+.reg-field select:focus {
+  border-color: #0E7490;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(14,116,144,0.12);
+  outline: none;
+}
+
 .reg-optional {
   font-weight: 400;
   color: #9CA3AF;
   font-size: 12px;
+}
+
+.reg-required {
+  color: #EF4444;
+  margin-left: 2px;
 }
 
 .reg-input-wrap {
@@ -492,6 +556,10 @@
 
 @media (max-width: 480px) {
   .reg-name-row { grid-template-columns: 1fr; gap: 0; }
+  .name-fields {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
   .mobile-field-row { flex-direction: column; }
   .mobile-field-row select { width: 100%; }
   .reg-card-header h2 { font-size: 21px; }

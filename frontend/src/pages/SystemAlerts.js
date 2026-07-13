@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import axios from 'axios';
+import API_BASE_URL from '../config/api';
 import '../styles/manageparticipant.css';
 import {
   FaExclamationTriangle,
@@ -18,49 +20,28 @@ const SystemAlerts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Static demo alerts — replace with API call if you have a backend endpoint
-  useEffect(() => {
+  const fetchAlerts = useCallback(async () => {
     setLoading(true);
-    // Simulated alerts — swap this with a real fetch if needed
-    const demoAlerts = [
-      {
-        _id: '1',
-        type: 'warning',
-        title: 'Pending Employee Approvals',
-        message: 'There are employees waiting for approval.',
-        createdAt: new Date().toISOString(),
-        read: false
-      },
-      {
-        _id: '2',
-        type: 'info',
-        title: 'New Trainee Registered',
-        message: 'A new trainee has registered and is pending approval.',
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
-        read: false
-      },
-      {
-        _id: '3',
-        type: 'success',
-        title: 'Payment Received',
-        message: 'A payment has been successfully processed.',
-        createdAt: new Date(Date.now() - 7200000).toISOString(),
-        read: true
-      },
-      {
-        _id: '4',
-        type: 'error',
-        title: 'Login Attempt Failed',
-        message: 'Multiple failed login attempts detected.',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        read: true
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/alerts/user`);
+      if (response.status === 200) {
+        setAlerts(response.data.alerts || []);
+        setUnreadCount(response.data.unreadCount || 0);
       }
-    ];
-    setAlerts(demoAlerts);
-    setFilteredAlerts(demoAlerts);
-    setLoading(false);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      setAlerts([]);
+      setUnreadCount(0);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAlerts();
+  }, [fetchAlerts]);
 
   // Filter + Search
   useEffect(() => {
@@ -80,12 +61,26 @@ const SystemAlerts = () => {
     setFilteredAlerts(filtered);
   }, [alerts, searchTerm, filterType]);
 
-  const handleDelete = (id) => {
-    setAlerts(prev => prev.filter(a => a._id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/api/alerts/${id}`);
+      setAlerts(prev => prev.filter(a => a._id !== id));
+    } catch (error) {
+      console.error('Error deleting alert:', error);
+      setAlerts(prev => prev.filter(a => a._id !== id));
+    }
   };
 
-  const markAllRead = () => {
-    setAlerts(prev => prev.map(a => ({ ...a, read: true })));
+  const markAllRead = async () => {
+    try {
+      await axios.put(`${API_BASE_URL}/api/alerts/read-all`);
+      setAlerts(prev => prev.map(a => ({ ...a, read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all alerts as read:', error);
+      setAlerts(prev => prev.map(a => ({ ...a, read: true })));
+      setUnreadCount(0);
+    }
   };
 
   const getIcon = (type) => {
@@ -113,8 +108,6 @@ const SystemAlerts = () => {
     { value: 'info', label: 'Info' },
     { value: 'success', label: 'Success' }
   ];
-
-  const unreadCount = alerts.filter(a => !a.read).length;
 
   return (
     <div className="student-management-container">

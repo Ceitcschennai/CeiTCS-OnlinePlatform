@@ -13,7 +13,8 @@ import {
   FaUserGraduate,
   FaChalkboardTeacher,
   FaExclamationTriangle,
-  FaCalendarAlt
+  FaCalendarAlt,
+  FaBell
 } from 'react-icons/fa';
 
 import '../styles/sidebar.css';
@@ -27,7 +28,8 @@ const menuConfig = {
     { to: '/assignments', icon: FaTasks, label: 'Assignments' },
     { to: '/queries', icon: FaQuestionCircle, label: 'Queries' },
     { to: '/payments', icon: FaCreditCard, label: 'Payments' },
-    { to: '/live-class', icon: FaVideo, label: 'Live Class' }
+    { to: '/live-class', icon: FaVideo, label: 'Live Class' },
+    { to: '/participant-alerts', icon: FaBell, label: 'System Alerts' }
   ],
 
   teacher: [
@@ -35,7 +37,8 @@ const menuConfig = {
     { to: '/teacher-assignments', icon: FaTasks, label: 'Assignments' },
     { to: '/take-attendance', icon: FaUserCheck, label: 'Attendance' },
     { to: '/student-queries', icon: FaQuestionCircle, label: 'Queries' },
-    { to: '/live-class', icon: FaVideo, label: 'Live Class' }
+    { to: '/live-class', icon: FaVideo, label: 'Live Class' },
+    { to: '/teacher-alerts', icon: FaBell, label: 'System Alerts' }
   ],
 
   trainee: [
@@ -45,7 +48,8 @@ const menuConfig = {
     { to: '/take-attendance', icon: FaUserCheck, label: 'Attendance' },
     { to: '/student-queries', icon: FaQuestionCircle, label: 'Queries' },
     { to: '/live-class', icon: FaVideo, label: 'Live Class' },
-    { to: '/teacher-schedule', icon: FaCalendarAlt, label: 'Schedule' }
+    { to: '/teacher-schedule', icon: FaCalendarAlt, label: 'Schedule' },
+    { to: '/teacher-alerts', icon: FaBell, label: 'System Alerts' }
   ],
 
   admin: [

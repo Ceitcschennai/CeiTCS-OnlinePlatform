@@ -248,12 +248,13 @@ const RaiseQuery = () => {
           <div className="form-row">
             <div className="form-group">
               <label>Subject *</label>
-              <select
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                required
-                disabled={fetchingSubjects}
-              >
+<select
+                 value={subject}
+                 onChange={(e) => setSubject(e.target.value)}
+                 required
+                 disabled={fetchingSubjects}
+                 style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.9rem' }}
+               >
                 <option value="">
                   {fetchingSubjects ? 'Loading subjects...' : 'Select Subject'}
                 </option>
@@ -272,11 +273,12 @@ const RaiseQuery = () => {
 
             <div className="form-group">
               <label>Priority</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                disabled={loading}
-              >
+<select
+                 value={priority}
+                 onChange={(e) => setPriority(e.target.value)}
+                 disabled={loading}
+                 style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.9rem' }}
+               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>

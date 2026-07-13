@@ -340,6 +340,12 @@
   margin-left: 4px;
 }
 
+.reg-required {
+  color: #EF4444;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
 .reg-input-wrap {
   position: relative;
   display: flex;

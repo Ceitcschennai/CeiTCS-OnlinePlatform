@@ -5,7 +5,7 @@ import API_BASE_URL from "../config/api";
 // ─── HARDCODED COURSES (unchanged) ───────────────────────────────────────────
 const courses = [
   {
-    id: 1, name: "Java", icon: "☕", color: "#e67e22",
+    id: 1, name: "Java", icon: "", color: "#e67e22",
     tagline: "Build robust enterprise applications",
     description: "Master Java from the ground up — OOP, collections, concurrency, Spring Boot, and real-world project development.",
     duration: "12 Weeks", level: "Beginner to Advanced", lessons: 84, projects: 6,
@@ -15,7 +15,7 @@ const courses = [
     subjectKeywords: ["java"],
   },
   {
-    id: 2, name: "JavaScript", icon: "⚡", color: "#f5a623",
+    id: 2, name: "JavaScript", icon: "", color: "#f5a623",
     tagline: "The language of the web",
     description: "From fundamentals to advanced JS — closures, promises, async/await, ES6+, DOM manipulation, and modern JavaScript patterns used at top companies.",
     duration: "10 Weeks", level: "Beginner to Intermediate", lessons: 70, projects: 5,
@@ -25,7 +25,7 @@ const courses = [
     subjectKeywords: ["javascript", "js"],
   },
   {
-    id: 3, name: "HTML", icon: "🌐", color: "#e74c3c",
+    id: 3, name: "HTML", icon: "", color: "#e74c3c",
     tagline: "The backbone of the web",
     description: "Master semantic HTML5, accessibility best practices, forms, media embedding, and SEO-friendly markup.",
     duration: "4 Weeks", level: "Beginner", lessons: 28, projects: 3,
@@ -35,7 +35,7 @@ const courses = [
     subjectKeywords: ["html"],
   },
   {
-    id: 4, name: "CSS", icon: "🎨", color: "#2980b9",
+    id: 4, name: "CSS", icon: "", color: "#2980b9",
     tagline: "Style the world with code",
     description: "Go from basic styling to advanced CSS with Flexbox, Grid, animations, responsive design, and CSS variables.",
     duration: "6 Weeks", level: "Beginner to Intermediate", lessons: 40, projects: 4,
@@ -45,7 +45,7 @@ const courses = [
     subjectKeywords: ["css"],
   },
   {
-    id: 5, name: "Python", icon: "🐍", color: "#27ae60",
+    id: 5, name: "Python", icon: "", color: "#27ae60",
     tagline: "Versatile, powerful, in-demand",
     description: "Learn Python for web development, automation, data science, and scripting.",
     duration: "10 Weeks", level: "Beginner to Advanced", lessons: 72, projects: 5,
@@ -55,7 +55,7 @@ const courses = [
     subjectKeywords: ["python"],
   },
   {
-    id: 6, name: "MERN Stack", icon: "⚛️", color: "#6c63ff",
+    id: 6, name: "MERN Stack", icon: "", color: "#6c63ff",
     tagline: "Full-stack mastery in one course",
     description: "Build complete web apps with MongoDB, Express, React, and Node.js.",
     duration: "16 Weeks", level: "Intermediate to Advanced", lessons: 112, projects: 8,
@@ -65,7 +65,7 @@ const courses = [
     subjectKeywords: ["mern", "react", "node", "mongodb"],
   },
   {
-    id: 7, name: "Cloud Computing", icon: "☁️", color: "#1abc9c",
+    id: 7, name: "Cloud Computing", icon: "", color: "#1abc9c",
     tagline: "Scale globally with the cloud",
     description: "Master AWS core services — EC2, S3, Lambda, RDS, VPC, and CloudFormation.",
     duration: "12 Weeks", level: "Intermediate", lessons: 88, projects: 6,
@@ -75,7 +75,7 @@ const courses = [
     subjectKeywords: ["cloud", "aws"],
   },
   {
-    id: 8, name: "Automation Testing", icon: "🤖", color: "#e74c3c",
+    id: 8, name: "Automation Testing", icon: "", color: "#e74c3c",
     tagline: "Test smarter, ship faster",
     description: "Learn end-to-end automation with Selenium, TestNG, Appium, and CI/CD integration.",
     duration: "10 Weeks", level: "Intermediate", lessons: 66, projects: 5,
@@ -85,7 +85,7 @@ const courses = [
     subjectKeywords: ["testing", "automation", "selenium", "qa"],
   },
   {
-    id: 9, name: "Data Science", icon: "📊", color: "#8e44ad",
+    id: 9, name: "Data Science", icon: "", color: "#8e44ad",
     tagline: "Turn data into decisions",
     description: "Master the data science lifecycle — data wrangling, EDA, visualization, machine learning, and model deployment.",
     duration: "14 Weeks", level: "Beginner to Advanced", lessons: 98, projects: 7,
@@ -95,7 +95,7 @@ const courses = [
     subjectKeywords: ["data science", "data", "ml", "machine learning"],
   },
   {
-    id: 10, name: "DSA", icon: "🧩", color: "#e67e22",
+    id: 10, name: "DSA", icon: "", color: "#e67e22",
     tagline: "Crack any coding interview",
     description: "Deep-dive into Data Structures & Algorithms. Arrays, trees, graphs, dynamic programming.",
     duration: "14 Weeks", level: "Intermediate to Advanced", lessons: 100, projects: 0,
@@ -105,7 +105,7 @@ const courses = [
     subjectKeywords: ["dsa", "algorithms", "data structures"],
   },
   {
-    id: 11, name: "AI", icon: "🧠", color: "#9b59b6",
+    id: 11, name: "AI", icon: "", color: "#9b59b6",
     tagline: "Build the future with AI",
     description: "From machine learning theory to LLMs — build intelligent systems with TensorFlow, PyTorch, NLP pipelines.",
     duration: "16 Weeks", level: "Advanced", lessons: 110, projects: 7,
@@ -117,7 +117,7 @@ const courses = [
   {
     id: 12,
     name: "Career Coaching",
-    icon: "🎯",
+    icon: "",
     color: "#16a085",
     tagline: "Unlock your full career potential",
     description:
@@ -182,7 +182,7 @@ const courses = [
   {
     id: 13,
     name: "Interview Coaching",
-    icon: "🎤",
+    icon: "",
     color: "#e67e22",
     tagline: "Ace every interview with confidence",
     description:
@@ -239,7 +239,7 @@ const courses = [
   {
     id: 14,
     name: "Wellbeing Coaching",
-    icon: "💚",
+    icon: "",
     color: "#27ae60",
     tagline: "Achieve balance, confidence, and productivity",
     description:
@@ -294,7 +294,7 @@ const courses = [
   {
     id: 15,
     name: "SDLC Fundamentals",
-    icon: "⚙️",
+    icon: "",
     color: "#3498db",
     tagline: "Learn the complete Software Development Life Cycle",
     description:
@@ -345,7 +345,7 @@ const courses = [
   {
     id: 16,
     name: "Interview Preparation",
-    icon: "💼",
+    icon: "",
     color: "#e67e22",
     tagline: "Prepare to crack every interview",
     description:
@@ -399,7 +399,7 @@ const courses = [
   {
     id: 17,
     name: "Mock Interview - Session 1",
-    icon: "🗣️",
+    icon: "",
     color: "#8e44ad",
     tagline: "Experience a real technical interview",
     description:

@@ -32,10 +32,12 @@ import FacultySubjects from "./pages/FacultySubjects";
 import FacultyAssignments from "./pages/FacultyAssignments";
 import FacultySchedulePage from "./pages/FacultySchedulePage";
 import FacultyDetails from "./pages/FacultyDetails";
+import FacultyAlerts from "./pages/FacultyAlerts";
 
 import TakeAttendance from "./pages/TakeAttendance";
 import StudentQueries from "./pages/StudentQueries";
 import ParticipantQueries from "./pages/ParticipantQueries";
+import ParticipantAlerts from "./pages/ParticipantAlerts";
 
 import MentorsPage from "./pages/MentorsPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
@@ -110,6 +112,7 @@ function App() {
         <Route path="/manage-teachers"    element={Layout(ManageFaculty)} />
         <Route path="/employee-dashboard" element={Layout(ParticipantDashboard)} />
         <Route path="/manage-subjects"    element={Layout(ManageSubjects)} />
+        <Route path="/participant-alerts" element={Layout(ParticipantAlerts)} />
 
         {/* ── FACULTY (TRAINEE) ROUTES ─────────────────────────────────────── */}
         <Route path="/teacher-dashboard"   element={Layout(FacultyDashboard)} />
@@ -119,6 +122,7 @@ function App() {
         <Route path="/teacher-details"     element={Layout(FacultyDetails)} />
         <Route path="/take-attendance"     element={Layout(TakeAttendance)} />
         <Route path="/student-queries"     element={Layout(StudentQueries)} />
+        <Route path="/teacher-alerts"      element={Layout(FacultyAlerts)} />
 
         {/* ── ADMIN (PROTECTED) ────────────────────────────────────────────── */}
         <Route

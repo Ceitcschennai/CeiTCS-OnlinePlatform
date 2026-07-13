@@ -13,19 +13,23 @@ const employeeSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
+    required: true,
     trim: true
   },
   email: {
     type: String,
+    required: true,
     unique: true,
     lowercase: true,
     trim: true
   },
   password: {
-    type: String
+    type: String,
+    required: true
   },
   mobile: {
     type: String,
+    required: true,
     trim: true
   },
 
@@ -40,6 +44,7 @@ const employeeSchema = new mongoose.Schema({
   },
   skills: {
     type: String,
+    required: true,
     trim: true
   },
   startTime: {          // ✅ added

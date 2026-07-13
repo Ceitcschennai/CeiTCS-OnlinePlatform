@@ -74,6 +74,7 @@ app.use("/api/notifications", require("./routes/notificationroutes.js"));
 app.use("/api/schedules", require("./routes/scheduleroutes.js"));
 app.use("/api/Notification", require("./routes/notificationroutes.js"));
 app.use("/api/mentor-requests", require("./routes/mentorrequestroutes.js"));
+app.use("/api/alerts", require("./routes/alertRoutes.js"));
 
 // ─────────────────────────────────────────────
 // HEALTH CHECK

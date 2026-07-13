@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import API_BASE_URL from "../config/api";
 import "../styles/facultyregister.css";
@@ -13,12 +13,23 @@ const TIMEZONE_OPTIONS = moment.tz.names().map((zone) => ({
 function TimezoneSelect({ id, value, onChange, error }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
 
   const selectedLabel = TIMEZONE_OPTIONS.find((option) => option.value === value)?.label || "";
   const displayValue = query || selectedLabel;
   const filteredOptions = TIMEZONE_OPTIONS.filter((option) =>
     `${option.value} ${option.label}`.toLowerCase().includes(query.toLowerCase())
   );
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const selectTimezone = (option) => {
     onChange(option.value);
@@ -27,7 +38,7 @@ function TimezoneSelect({ id, value, onChange, error }) {
   };
 
   return (
-    <div className="timezone-select-wrapper">
+    <div className="timezone-select-wrapper" ref={wrapperRef}>
       <div className={`reg-input-wrap timezone-input-wrap ${error ? "reg-input-wrap--invalid" : ""}`}>
         <input
           id={id}
@@ -228,6 +239,27 @@ const FacultyRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate mandatory fields
+    if (!form.firstName || form.firstName.trim() === "") {
+      setError("First Name is required.");
+      return;
+    }
+
+    if (!form.lastName || form.lastName.trim() === "") {
+      setError("Last Name is required.");
+      return;
+    }
+
+    if (!form.mobile || form.mobile.trim() === "") {
+      setError("Mobile Number is required.");
+      return;
+    }
+
+    if (!form.preferredSubject || form.preferredSubject.trim() === "") {
+      setError("Preferred Subject is required.");
+      return;
+    }
+
     if (!passwordRegex.test(form.password)) {
       setError("Password must be at least 8 characters with 1 uppercase, 1 number, and 1 special character");
       return;
@@ -251,6 +283,13 @@ const FacultyRegister = () => {
     if (!form.timezone) {
       setError("Please select a timezone.");
       setTimezoneError("Please select a timezone.");
+      return;
+    }
+
+    // Conditional validation: Achievement Document required when Other Achievements is "Yes"
+    const hasAchievements = form.otherAchievements && form.otherAchievements.toLowerCase() === "yes";
+    if (hasAchievements && !achievementFile) {
+      setError("Achievement Document is required when Other Achievements is provided.");
       return;
     }
 
@@ -309,45 +348,61 @@ const FacultyRegister = () => {
               onChange={handleChange}
               required
             />
-            <input
-              type="text"
-              name="firstName"
-              placeholder="First Name"
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="text"
-              name="lastName"
-              placeholder="Last Name"
-              onChange={handleChange}
-              required
-            />
+            <div className="reg-field">
+              <label htmlFor="faculty-firstname">First Name<span className="reg-required">*</span></label>
+              <input
+                type="text"
+                name="firstName"
+                id="faculty-firstname"
+                placeholder="First Name"
+                onChange={handleChange}
+                required
+                value={form.firstName}
+              />
+            </div>
+            <div className="reg-field">
+              <label htmlFor="faculty-lastname">Last Name<span className="reg-required">*</span></label>
+              <input
+                type="text"
+                name="lastName"
+                id="faculty-lastname"
+                placeholder="Last Name"
+                onChange={handleChange}
+                required
+                value={form.lastName}
+              />
+            </div>
           </div>
 
           <div className="form-group mobile-field-row">
-            <select name="countryCode" value={form.countryCode} onChange={handleChange} required aria-label="Country Code">
-              <option value="">+ Code</option>
-              <option value="+91">🇮🇳 +91</option>
-              <option value="+1">🇺🇸 +1</option>
-              <option value="+44">🇬🇧 +44</option>
-              <option value="+61">🇦🇺 +61</option>
-              <option value="+1">🇨🇦 +1</option>
-              <option value="+65">🇸🇬 +65</option>
-            </select>
-            <input
-              type="tel"
-              name="mobile"
-              placeholder="Mobile Number"
-              onChange={handleChange}
-              required
-              value={form.mobile}
-              aria-label="Mobile Number"
-            />
+            <div className="reg-field">
+              <label htmlFor="faculty-countrycode">Country Code<span className="reg-required">*</span></label>
+              <select name="countryCode" value={form.countryCode} onChange={handleChange} required id="faculty-countrycode">
+                <option value="">+ Code</option>
+                <option value="+91">🇮🇳 +91</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+61">🇦🇺 +61</option>
+                <option value="+1">🇨🇦 +1</option>
+                <option value="+65">🇸🇬 +65</option>
+              </select>
+            </div>
+            <div className="reg-field mobile-number-field">
+              <label htmlFor="faculty-mobile">Mobile Number<span className="reg-required">*</span></label>
+              <input
+                type="tel"
+                name="mobile"
+                id="faculty-mobile"
+                placeholder="Mobile Number"
+                onChange={handleChange}
+                required
+                value={form.mobile}
+              />
+            </div>
           </div>
 
           <div className="reg-field">
-            <label htmlFor="faculty-timezone">Timezone</label>
+            <label htmlFor="faculty-timezone">Timezone<span className="reg-required">*</span></label>
             <TimezoneSelect
               id="faculty-timezone"
               value={form.timezone}
@@ -360,16 +415,20 @@ const FacultyRegister = () => {
           </div>
 
           <div className="email-verify-wrap">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email ID"
-              onChange={handleChange}
-              required
-              value={form.email}
-              disabled={emailVerified}
-              className={emailVerified ? "email-verified" : ""}
-            />
+            <div className="reg-field">
+              <label htmlFor="faculty-email">Email<span className="reg-required">*</span></label>
+              <input
+                type="email"
+                name="email"
+                id="faculty-email"
+                placeholder="Email ID"
+                onChange={handleChange}
+                required
+                value={form.email}
+                disabled={emailVerified}
+                className={emailVerified ? "email-verified" : ""}
+              />
+            </div>
             {emailVerified && <span className="verify-status verified">✓ Email Verified</span>}
 
             {!emailVerified && (
@@ -422,58 +481,77 @@ const FacultyRegister = () => {
             )}
           </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            onChange={handleChange}
-            required
-            value={form.password}
-          />
+          <div className="reg-field">
+            <label htmlFor="faculty-password">Password<span className="reg-required">*</span></label>
+            <input
+              type="password"
+              name="password"
+              id="faculty-password"
+              placeholder="Password"
+              onChange={handleChange}
+              required
+              value={form.password}
+            />
+          </div>
 
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            onChange={handleChange}
-            required
-            value={form.confirmPassword}
-          />
+          <div className="reg-field">
+            <label htmlFor="faculty-confirmPassword">Confirm Password<span className="reg-required">*</span></label>
+            <input
+              type="password"
+              name="confirmPassword"
+              id="faculty-confirmPassword"
+              placeholder="Confirm Password"
+              onChange={handleChange}
+              required
+              value={form.confirmPassword}
+            />
+          </div>
 
-          <input
-            type="text"
-            name="preferredSubject"
-            placeholder="Preferred Subject (e.g., Data Science, Web Development)"
-            onChange={handleChange}
-            required
-            value={form.preferredSubject}
-          />
+          <div className="reg-field">
+            <label htmlFor="faculty-preferredSubject">Preferred Subject<span className="reg-required">*</span></label>
+            <input
+              type="text"
+              name="preferredSubject"
+              id="faculty-preferredSubject"
+              placeholder="Preferred Subject (e.g., Data Science, Web Development)"
+              onChange={handleChange}
+              required
+              value={form.preferredSubject}
+            />
+          </div>
 
-          <label>Upload Degree Certificate:</label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={handleFileChange}
-          />
+          <div className="reg-field">
+            <label htmlFor="faculty-degreeCertificate">Degree Certificate<span className="reg-required">*</span></label>
+            <input
+              type="file"
+              id="faculty-degreeCertificate"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+            />
+          </div>
 
-          <label>Do you have other achievements? (Yes/No)</label>
-          <input
-            type="text"
-            name="otherAchievements"
-            placeholder="Type Yes or No"
-            onChange={handleChange}
-            value={form.otherAchievements}
-          />
+          <div className="reg-field">
+            <label htmlFor="faculty-otherAchievements">Do you have other achievements? (Yes/No)</label>
+            <input
+              type="text"
+              name="otherAchievements"
+              id="faculty-otherAchievements"
+              placeholder="Type Yes or No"
+              onChange={handleChange}
+              value={form.otherAchievements}
+            />
+          </div>
 
           {form.otherAchievements.toLowerCase() === "yes" && (
-            <>
-              <label>Upload Achievement Document:</label>
+            <div className="reg-field">
+              <label htmlFor="faculty-achievementDocument">Achievement Document<span className="reg-required">*</span></label>
               <input
                 type="file"
+                id="faculty-achievementDocument"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleAchievementFileChange}
               />
-            </>
+            </div>
           )}
 
           {!emailVerified && (

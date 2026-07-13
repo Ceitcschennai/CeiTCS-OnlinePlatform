@@ -208,12 +208,13 @@ const ParticipantQueries = () => {
                 <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '0.85rem', color: '#374151' }}>
                   Subject *
                 </label>
-                <select
-                  name="courseCode"
-                  value={form.courseCode}
-                  onChange={handleFormChange}
-                  required
-                >
+<select
+                   name="courseCode"
+                   value={form.courseCode}
+                   onChange={handleFormChange}
+                   required
+                   style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.9rem' }}
+                 >
                   <option value="">Select Course</option>
 
                   {subjects.map(subject => (

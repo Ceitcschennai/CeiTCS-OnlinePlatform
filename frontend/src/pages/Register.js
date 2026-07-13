@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../config/api";
@@ -33,74 +33,85 @@ const TIMEZONE_OPTIONS = moment.tz.names().map((zone) => ({
 }));
 
 /* ─────────────────────────────────────────────
-   TIMEZONE SELECT (searchable dropdown)
-───────────────────────────────────────────── */
-function TimezoneSelect({ id, value, onChange, error }) {
-  const [query, setQuery] = useState("");
-  const [open, setOpen]   = useState(false);
+    TIMEZONE SELECT (searchable dropdown)
+  ───────────────────────────────────────────── */
+  function TimezoneSelect({ id, value, onChange, error }) {
+    const [query, setQuery] = useState("");
+    const [open, setOpen]   = useState(false);
+    const wrapperRef = useRef(null);
 
-  const selectedLabel  = TIMEZONE_OPTIONS.find((o) => o.value === value)?.label || "";
-  const displayValue   = query || selectedLabel;
-  const filteredOptions = TIMEZONE_OPTIONS.filter((o) =>
-    `${o.value} ${o.label}`.toLowerCase().includes(query.toLowerCase())
-  );
+    const selectedLabel  = TIMEZONE_OPTIONS.find((o) => o.value === value)?.label || "";
+    const displayValue   = query || selectedLabel;
+    const filteredOptions = TIMEZONE_OPTIONS.filter((o) =>
+      `${o.value} ${o.label}`.toLowerCase().includes(query.toLowerCase())
+    );
 
-  const selectTimezone = (option) => {
-    onChange(option.value);
-    setQuery(option.value);
-    setOpen(false);
-  };
+    useEffect(() => {
+      const handleOutsideClick = (e) => {
+        if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+          setOpen(false);
+        }
+      };
+      document.addEventListener("mousedown", handleOutsideClick);
+      return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }, []);
 
-  return (
-    <div className="timezone-select-wrapper">
-      <div className={`reg-input-wrap timezone-input-wrap ${error ? "reg-input-wrap--invalid" : ""}`}>
-        <input
-          id={id}
-          type="text"
-          value={displayValue}
-          placeholder="Search timezone"
-          autoComplete="off"
-          aria-invalid={Boolean(error)}
-          aria-controls={`${id}-options`}
-          onFocus={() => setOpen(true)}
-          onChange={(e) => {
-            const nextValue  = e.target.value.trim();
-            const exactMatch = TIMEZONE_OPTIONS.find((o) => o.value === nextValue);
-            setQuery(nextValue);
-            onChange(exactMatch ? exactMatch.value : "");
-          }}
-        />
-        {value && (
-          <button type="button" className="timezone-clear-btn" onClick={() => { setQuery(""); onChange(""); }}>
-            Clear
-          </button>
-        )}
-      </div>
+    const selectTimezone = (option) => {
+      onChange(option.value);
+      setQuery(option.value);
+      setOpen(false);
+    };
 
-      {open && (
-        <div id={`${id}-options`} className="timezone-options" role="listbox">
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`timezone-option ${option.value === value ? "timezone-option--selected" : ""}`}
-                onClick={() => selectTimezone(option)}
-                role="option"
-                aria-selected={option.value === value}
-              >
-                {option.label}
-              </button>
-            ))
-          ) : (
-            <div className="timezone-empty">No timezone found</div>
+    return (
+      <div className="timezone-select-wrapper" ref={wrapperRef}>
+        <div className={`reg-input-wrap timezone-input-wrap ${error ? "reg-input-wrap--invalid" : ""}`}>
+          <input
+            id={id}
+            type="text"
+            value={displayValue}
+            placeholder="Search timezone"
+            autoComplete="off"
+            aria-invalid={Boolean(error)}
+            aria-controls={`${id}-options`}
+            onFocus={() => setOpen(true)}
+            onChange={(e) => {
+              const nextValue  = e.target.value.trim();
+              const exactMatch = TIMEZONE_OPTIONS.find((o) => o.value === nextValue);
+              setQuery(nextValue);
+              onChange(exactMatch ? exactMatch.value : "");
+            }}
+          />
+          {value && (
+            <button type="button" className="timezone-clear-btn" onClick={() => { setQuery(""); onChange(""); }}>
+              Clear
+            </button>
           )}
         </div>
-      )}
-      {error && <div className="field-error">{error}</div>}
-    </div>
-  );
-}
+
+        {open && (
+          <div id={`${id}-options`} className="timezone-options" role="listbox">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`timezone-option ${option.value === value ? "timezone-option--selected" : ""}`}
+                  onClick={() => selectTimezone(option)}
+                  role="option"
+                  aria-selected={option.value === value}
+                >
+                  {option.label}
+                </button>
+              ))
+            ) : (
+              <div className="timezone-empty">No timezone found</div>
+            )}
+          </div>
+        )}
+        {error && <div className="field-error">{error}</div>}
+      </div>
+    );
+  }
 
 /* ─────────────────────────────────────────────
    OTP SECTION (shared UI)
@@ -283,6 +294,15 @@ function FacultyForm() {
       setTimezoneError("Please select a timezone.");
       return;
     }
+    if (!degreeFile) {
+      setError("Experience Certificate is required.");
+      return;
+    }
+    const hasAchievements = form.otherAchievements && form.otherAchievements.toLowerCase() === "yes";
+    if (hasAchievements && !achievementFile) {
+      setError("Achievement Document is required when Other Achievements is Yes.");
+      return;
+    }
 
     setLoading(true);
     const formData = new FormData();
@@ -322,7 +342,7 @@ function FacultyForm() {
           </div>
         </div>
         <div className="reg-field">
-          <label>First Name</label>
+          <label>First Name<span className="reg-required">*</span></label>
           <div className="reg-input-wrap">
             <span className="reg-field-icon">👤</span>
             <input type="text" name="firstName" placeholder="First Name" required onChange={handleChange} />
@@ -331,7 +351,7 @@ function FacultyForm() {
       </div>
 
       <div className="reg-field">
-        <label>Last Name</label>
+        <label>Last Name<span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">👤</span>
           <input type="text" name="lastName" placeholder="Last Name" required onChange={handleChange} />
@@ -340,7 +360,7 @@ function FacultyForm() {
 
       {/* Mobile — PhoneInput (Doc 2) */}
       <div className="reg-field">
-        <label>Mobile Number</label>
+        <label>Mobile Number<span className="reg-required">*</span></label>
         <PhoneInput
           country={"in"}
           enableSearch={true}
@@ -351,7 +371,7 @@ function FacultyForm() {
 
       {/* Email + OTP */}
       <div className="reg-field">
-        <label>Email Address</label>
+        <label>Email Address<span className="reg-required">*</span></label>
         <div className="email-verify-wrap">
           <div className="email-input-row">
             <div className="reg-input-wrap" style={{ flex: 1 }}>
@@ -379,7 +399,7 @@ function FacultyForm() {
 
       {/* Timezone — searchable (Doc 2) */}
       <div className="reg-field">
-        <label htmlFor="faculty-register-timezone">Timezone</label>
+        <label htmlFor="faculty-register-timezone">Timezone<span className="reg-required">*</span></label>
         <TimezoneSelect
           id="faculty-register-timezone"
           value={form.timezone}
@@ -389,16 +409,16 @@ function FacultyForm() {
       </div>
 
       <div className="reg-field">
-        <label>Subject / Skills</label>
+        <label>Subject / Skills<span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">📚</span>
           <input type="text" name="preferredSubject" placeholder="e.g., Data Science, Web Development" required onChange={handleChange} />
         </div>
       </div>
 
-      {/* Password */}
+{/* Password */}
       <div className="reg-field">
-        <label>Password</label>
+        <label>Password<span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">🔒</span>
           <input type="password" name="password" placeholder="Create password" required onChange={handleChange} />
@@ -417,7 +437,7 @@ function FacultyForm() {
       </div>
 
       <div className="reg-field">
-        <label>Confirm Password</label>
+        <label>Confirm Password<span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">🔒</span>
           <input type="password" name="confirmPassword" placeholder="Confirm password" required onChange={handleChange} />
@@ -431,7 +451,7 @@ function FacultyForm() {
 
       {/* File Uploads */}
       <div className="reg-field">
-        <label>Experience Certificate <span className="reg-optional">(PDF/JPG/PNG)</span></label>
+        <label>Experience Certificate<span className="reg-required">*</span></label>
         <div className="reg-file-wrap">
           <label className="reg-file-label">
             📎 Choose File
@@ -468,7 +488,7 @@ function FacultyForm() {
 
       {form.otherAchievements.toLowerCase() === "yes" && (
         <div className="reg-field">
-          <label>Upload Achievement Document <span className="reg-optional">(PDF/JPG/PNG)</span></label>
+          <label>Upload Achievement Document<span className="reg-required">*</span> <span className="reg-optional">(PDF/JPG/PNG)</span></label>
           <div className="reg-file-wrap">
             <label className="reg-file-label">
               📎 Choose File
@@ -598,6 +618,10 @@ function ParticipantForm() {
     e.preventDefault();
     setError(""); setSuccess("");
 
+    if (!formData.firstName) { setError("First Name is required."); return; }
+    if (!formData.lastName) { setError("Last Name is required."); return; }
+    if (!formData.mobile) { setError("Mobile Number is required."); return; }
+    if (!formData.subject) { setError("Subject / Skills is required."); return; }
     if (!PARTICIPANT_REGEX.test(formData.password)) {
       setError("Password must be 8+ characters with at least 1 number and 1 special character.");
       return;
@@ -606,6 +630,7 @@ function ParticipantForm() {
     if (!formData.startTime || !formData.endTime)       { setError("Please select preferred class timing.");         return; }
     if (!emailVerified)                                 { setError("Please verify your email before registration."); return; }
     if (!isValidPhoneNumber("+" + formData.mobile))     { setError("Please enter a valid phone number.");            return; }
+    if (!formData.proof) { setError("Please upload your ID / Certificate."); return; }
 
     setLoading(true);
     const data = new FormData();
@@ -618,7 +643,7 @@ function ParticipantForm() {
     data.append("endTime",    formData.endTime);
     data.append("skills",     formData.subject);
     data.append("salutation", formData.title);
-    if (formData.proof) data.append("proof", formData.proof);
+    data.append("proof", formData.proof);
 
     try {
       const res = await axios.post(`${API_BASE_URL}/api/employee/register`, data, {
@@ -658,7 +683,7 @@ function ParticipantForm() {
           </div>
         </div>
         <div className="reg-field">
-          <label>First Name</label>
+          <label>First Name <span className="reg-required">*</span></label>
           <div className="reg-input-wrap">
             <span className="reg-field-icon">👤</span>
             <input type="text" name="firstName" placeholder="First Name" required
@@ -668,7 +693,7 @@ function ParticipantForm() {
       </div>
 
       <div className="reg-field">
-        <label>Last Name</label>
+        <label>Last Name <span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">👤</span>
           <input type="text" name="lastName" placeholder="Last Name" required
@@ -678,7 +703,7 @@ function ParticipantForm() {
 
       {/* Mobile — PhoneInput (Doc 2) */}
       <div className="reg-field">
-        <label>Mobile Number</label>
+        <label>Mobile Number <span className="reg-required">*</span></label>
         <PhoneInput
           country={"in"}
           enableSearch={true}
@@ -689,7 +714,7 @@ function ParticipantForm() {
 
       {/* Email + OTP */}
       <div className="reg-field">
-        <label>Email Address</label>
+        <label>Email Address <span className="reg-required">*</span></label>
         <div className="email-verify-wrap">
           <div className="email-input-row">
             <div className="reg-input-wrap" style={{ flex: 1 }}>
@@ -717,7 +742,7 @@ function ParticipantForm() {
       </div>
 
       <div className="reg-field">
-        <label>Subject / Skills</label>
+        <label>Subject / Skills <span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">📚</span>
           <input type="text" name="subject" placeholder="e.g., Python, Full Stack, Java" required
@@ -742,7 +767,7 @@ function ParticipantForm() {
 
       {/* Password */}
       <div className="reg-field">
-        <label>Password</label>
+        <label>Password <span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">🔒</span>
           <input type="password" name="password" placeholder="Create password" required
@@ -762,7 +787,7 @@ function ParticipantForm() {
       </div>
 
       <div className="reg-field">
-        <label>Confirm Password</label>
+        <label>Confirm Password <span className="reg-required">*</span></label>
         <div className="reg-input-wrap">
           <span className="reg-field-icon">🔒</span>
           <input type="password" name="confirmPassword" placeholder="Confirm password" required
@@ -776,7 +801,7 @@ function ParticipantForm() {
       </div>
 
       <div className="reg-field">
-        <label>Upload ID / Certificate <span className="reg-optional">(Optional)</span></label>
+        <label>Upload ID / Certificate <span className="reg-required">*</span></label>
         <div className="reg-file-wrap">
           <label className="reg-file-label">
             📎 Choose File

@@ -443,6 +443,27 @@
   background: #1976D2;
 }
 
+.download-btn:disabled {
+  background: #90caf9;
+  cursor: wait;
+}
+
+.receipt-error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0 0 14px 0;
+  font-size: 14px;
+}
+
+.receipt-unavailable {
+  color: #888;
+  font-size: 13px;
+  font-style: italic;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

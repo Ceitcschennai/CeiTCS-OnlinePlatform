@@ -480,6 +480,48 @@ function CourseDetail({ course, onBack, facultyList, facultyLoading, navigate })
   // ✅ Filter approved faculty relevant to this course
   const courseFaculty = filterFacultyForCourse(facultyList, course);
 
+  /* Step 34 — resolve the CANONICAL courseCode from the backend Course collection
+     (single source of truth) at Enroll-Now time, using the existing public
+     GET /api/courses endpoint. The hardcoded catalog above stays display-only —
+     no courseCode is hardcoded here. Matching is EXACT case-insensitive on
+     courseName only (no partial/fuzzy mapping). If no Course matches, the
+     legacy selection {courseId, courseName, price} is stored without a
+     courseCode so registration behaves exactly as before. */
+  const handleEnrollNow = async () => {
+    let matchedCourse = null;
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/courses?search=${encodeURIComponent(course.name)}&limit=100`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data.courses)
+          ? data.courses
+          : Array.isArray(data) ? data : [];
+        const norm = (v) => String(v ?? "").trim().toLowerCase();
+        matchedCourse =
+          list.find((c) => norm(c.courseName) === norm(course.name)) || null;
+      }
+    } catch {
+      // API/network failure → keep legacy behavior (no courseCode), never block registration
+      matchedCourse = null;
+    }
+
+    const selectedCourse = {
+      courseId: course.id,
+      courseName: matchedCourse ? matchedCourse.courseName : course.name,
+      price: course.price,
+      ...(matchedCourse && String(matchedCourse.courseCode || "").trim()
+        ? { courseCode: String(matchedCourse.courseCode).trim() }
+        : {})
+    };
+    localStorage.setItem(
+      "selectedCourseForEnrollment",
+      JSON.stringify(selectedCourse)
+    );
+    navigate("/register");
+  };
+
   return (
     <>
       <style>{detailStyles}</style>
@@ -528,15 +570,7 @@ function CourseDetail({ course, onBack, facultyList, facultyLoading, navigate })
                 <div className="cd-price">{course.price}</div>
                 <div className="cd-orig-price">{course.originalPrice}</div>
                 <div className="cd-save-badge">Save {savePercent}%</div>
-                <button className="cd-enroll-btn" onClick={() => {
-                  const selectedCourse = {
-                    courseId: course.id,
-                    courseName: course.name,
-                    price: course.price
-                  };
-                  localStorage.setItem("selectedCourseForEnrollment", JSON.stringify(selectedCourse));
-                  navigate("/register");
-                }}>🚀 Enroll Now</button>
+                <button className="cd-enroll-btn" onClick={handleEnrollNow}>🚀 Enroll Now</button>
                 <button className="cd-trial-btn">Try Free Preview</button>
                 <div className="cd-includes">
                   <div className="cd-include-item">✅ Lifetime Access</div>

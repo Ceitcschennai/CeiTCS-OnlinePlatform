@@ -4,16 +4,29 @@ const Query = require('../models/Query');
 const Teacher = require('../models/Teacher');
 const upload = require('../middleware/upload');
 const Employee = require('../models/Employee');
+const { protect, authorize } = require('../middleware/authMiddleware');
+const {
+  hasCourseAccess,
+  accessibleCourseCodes
+} = require('../utils/courseAccess');
+
+// Case-insensitive exact course code match (kept consistent with
+// the enrollment checks already used by paymentroutes.js)
+const sameCourseCode = (a, b) =>
+  String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 
 // @route   POST /api/queries
-router.post('/', upload.array('attachments', 5), async (req, res) => {
+router.post('/', protect, authorize('employee'), upload.array('attachments', 5), async (req, res) => {
   try {
     const {
-      studentId, studentName,
+      studentName,
       courseName, courseCode, question, priority = 'Medium', tags, isPublic = false
     } = req.body;
 
-    if (!studentId || !studentName || !courseName || !question) {
+    // Step 13 H1/Issue 3: identity comes from the authenticated JWT only
+    const studentId = String(req.user._id);
+
+    if (!studentName || !courseName || !question) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -70,9 +83,11 @@ router.get('/stats', async (req, res) => {
 });
 
 // @route   GET /api/queries/student/:studentId
-router.get('/student/:studentId', async (req, res) => {
+// Step 13 H1/Issue 3: authenticated participant reads OWN queries
+// (req.params.studentId is never trusted as identity)
+router.get('/student/:studentId', protect, authorize('employee'), async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const studentId = String(req.user._id);
     const { page = 1, limit = 10, status } = req.query;
 
     let filter = { studentId };
@@ -312,9 +327,11 @@ router.delete('/:id', async (req, res) => {
 
 
 
-router.get('/participant/:employeeId/subjects', async (req, res) => {
+router.get('/participant/:employeeId/subjects', protect, authorize('employee'), async (req, res) => {
   try {
-    const employee = await Employee.findById(req.params.employeeId);
+    // Step 13 H1/Issue 3: identity comes from the JWT — the URL id
+    // is never trusted as the participant identity
+    const employee = await Employee.findById(req.user._id);
 
 
     if (!employee) {
@@ -324,46 +341,53 @@ router.get('/participant/:employeeId/subjects', async (req, res) => {
       });
     }
 
-    // Main account validation
-    if (
-      employee.approvalStatus !== 'Approved' ||
-      employee.paymentStatus !== 'Paid'
-    ) {
+    // Registration approval gate (unchanged)
+    if (employee.approvalStatus !== 'Approved') {
       return res.status(403).json({
         success: false,
         message: 'Account not approved or payment pending'
       });
     }
 
-    const subjects = [];
+    // Candidate courses = existing enrollment structure (unchanged)
+    const candidates = [];
 
-    // Main Course
-    if (
-      employee.courseCode &&
-      employee.courseName &&
-      employee.paymentStatus === 'Paid'
-    ) {
-      subjects.push({
+    if (employee.courseCode && employee.courseName) {
+      candidates.push({
         courseCode: employee.courseCode,
         courseName: employee.courseName
       });
     }
 
-    // Enrolled Courses
     if (Array.isArray(employee.enrolledSubjects)) {
-      employee.enrolledSubjects.forEach(subject => {
-
-        if (
-          subject.paymentStatus === 'Paid' &&
-          subject.courseCode &&
-          subject.courseName
-        ) {
-          subjects.push({
+      employee.enrolledSubjects.forEach((subject) => {
+        if (subject && subject.courseCode && subject.courseName) {
+          candidates.push({
             courseCode: subject.courseCode,
             courseName: subject.courseName
           });
         }
+      });
+    }
 
+    // Approved access rule (A1+B2+C1+D1): the manual flag is
+    // account-level; otherwise the LATEST payment for the exact
+    // course must be PAID. Never broadcasts across courses.
+    const accessible = await accessibleCourseCodes(
+      req.user._id,
+      candidates.map((c) => c.courseCode)
+    );
+
+    const subjects = candidates.filter((c) =>
+      accessible.has(String(c.courseCode).trim().toLowerCase())
+    );
+
+    // No accessible paid/enrolled subjects -> original
+    // 403 "payment pending" answer is returned.
+    if (subjects.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account not approved or payment pending'
       });
     }
 
@@ -393,24 +417,18 @@ router.get('/participant/:employeeId/subjects', async (req, res) => {
 
 
 
-router.post('/participant', async (req, res) => {
+router.post('/participant', protect, authorize('employee'), async (req, res) => {
   try {
 
     const {
-      studentId,
       courseCode,
       question,
       priority = 'Medium'
     } = req.body;
 
-    if (!studentId || !courseCode || !question) {
-      return res.status(400).json({
-        success: false,
-        message: 'Student ID, Course Code and Question are required'
-      });
-    }
-
-    const employee = await Employee.findById(studentId);
+    // Step 13 H1/Issue 3: identity from the authenticated JWT only
+    // (any client-supplied studentId is ignored)
+    const employee = await Employee.findById(req.user._id);
 
     if (!employee) {
       return res.status(404).json({
@@ -419,11 +437,27 @@ router.post('/participant', async (req, res) => {
       });
     }
 
-    // Account validation
-    if (
-      employee.approvalStatus !== 'Approved' ||
-      employee.paymentStatus !== 'Paid'
-    ) {
+    // Registration approval gate (unchanged)
+    if (employee.approvalStatus !== 'Approved') {
+      return res.status(403).json({
+        success: false,
+        message: 'Account not approved or payment pending'
+      });
+    }
+
+    const selectedCode = String(courseCode || '').trim();
+
+    if (!selectedCode || !question) {
+      return res.status(400).json({
+        success: false,
+        message: 'Course Code and Question are required'
+      });
+    }
+
+    // Approved course-level access rule (A1+B2+C1+D1)
+    const allowed = await hasCourseAccess(req.user._id, selectedCode);
+
+    if (!allowed) {
       return res.status(403).json({
         success: false,
         message: 'Account not approved or payment pending'
@@ -432,41 +466,33 @@ router.post('/participant', async (req, res) => {
 
     let courseName = '';
 
-    const selectedCode = String(courseCode).trim();
-    const employeeCode = String(employee.courseCode).trim();
-
-    // Main Course Validation
+    // Enrollment resolution (existing structure, case-insensitive —
+    // consistent with the paymentroutes enrollment checks)
     if (
-      employee.courseCode === courseCode &&
-      employee.paymentStatus === 'Paid'
+      employee.courseCode &&
+      sameCourseCode(employee.courseCode, selectedCode) &&
+      employee.courseName
     ) {
       courseName = employee.courseName;
     }
 
-    console.log("Course Name After Main Check:", courseName);
-
-    // Enrolled Course Validation
-    const selectedSubject =
-      employee.enrolledSubjects?.find(
-        subject =>
-          subject.courseCode === courseCode &&
-          subject.paymentStatus === 'Paid'
-      );
+    const selectedSubject = (employee.enrolledSubjects || []).find(
+      (subject) =>
+        subject &&
+        sameCourseCode(subject.courseCode, selectedCode) &&
+        subject.courseName
+    );
 
     if (selectedSubject) {
       courseName = selectedSubject.courseName;
     }
 
-    console.log("Final Course Name:", courseName);
-
+    // Step 13 H1/Issue 4: never expose authorization internals
+    // (paymentStatus / enrolledSubjects) in the response
     if (!courseName) {
       return res.status(400).json({
         success: false,
-        message: 'DEBUG',
-        employeeCourseCode: employee.courseCode,
-        receivedCourseCode: courseCode,
-        employeePaymentStatus: employee.paymentStatus,
-        enrolledSubjects: employee.enrolledSubjects
+        message: 'Selected course is not part of your enrollment'
       });
     }
 
@@ -474,25 +500,13 @@ router.post('/participant', async (req, res) => {
       studentId: employee._id,
       studentName: `${employee.firstName} ${employee.lastName}`,
       courseName,
-      courseCode,
+      courseCode: selectedCode,
       question,
       priority,
       status: 'Pending'
     });
 
     await query.save();
-
-    
-    console.log("Received Body:", req.body);
-
-    console.log("Employee Course Code:", employee.courseCode);
-    console.log("Selected Course Code:", courseCode);
-    console.log("Employee Payment:", employee.paymentStatus);
-
-    console.log(
-      "Enrolled Subjects:",
-      employee.enrolledSubjects
-    );
 
     res.status(201).json({
       success: true,

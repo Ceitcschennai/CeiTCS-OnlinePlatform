@@ -4,6 +4,16 @@ const bcrypt = require("bcryptjs");
 const Employee = require("../models/Employee");
 const Teacher = require("../models/Teacher");
 const transporter = require("../config/email");
+const { protect, authorize } = require("../middleware/authMiddleware");
+
+/* =====================================================
+   SECURITY: every route below is an admin operation
+   (pending/rejected lists, approvals, faculty & trainee
+   management, teacher dropdowns). One guard at router
+   level keeps the behaviour identical for admins while
+   denying employees / teachers / anonymous callers.
+===================================================== */
+router.use(protect, authorize("admin"));
 
 /* ================= GET ALL PENDING ================= */
 router.get("/pending", async (req, res) => {

@@ -80,7 +80,9 @@ const RaiseQuery = () => {
        console.log("Student:", student);
        console.log("Student ID:", currentStudentId);
 
-       const response = await axios.get(`${API_BASE_URL}/api/queries/student/${currentStudentId}`);
+       const response = await axios.get(`${API_BASE_URL}/api/queries/student/${currentStudentId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
 
        if (response.status === 200) {
          setQueries(response.data.queries || []);
@@ -143,7 +145,9 @@ const RaiseQuery = () => {
         priority
       });
 
-      const response = await axios.post(`${API_BASE_URL}/api/queries`, newQuery);
+      const response = await axios.post(`${API_BASE_URL}/api/queries`, newQuery, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
 
       if (response.status === 201) {
         // Reset form

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Course = require("../models/Course");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 const generateCourseCode = async (courseName) => {
 
@@ -87,7 +88,7 @@ router.get('/', async (req, res) => {
 
 const Teacher = require("../models/Teacher");
 
-router.post("/", async (req, res) => {
+router.post("/", protect, authorize("admin"), async (req, res) => {
   try {
 
     const courseCode = await generateCourseCode(
@@ -179,7 +180,7 @@ router.get('/teacher/:teacherId', async (req, res) => {
 
 
 // UPDATE COURSE
-router.put("/:id", async (req, res) => {
+router.put("/:id", protect, authorize("admin"), async (req, res) => {
   try {
 
     const course = await Course.findByIdAndUpdate(
@@ -201,7 +202,7 @@ router.put("/:id", async (req, res) => {
 });
 
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protect, authorize("admin"), async (req, res) => {
   try {
 
     const course = await Course.findById(req.params.id);
@@ -246,7 +247,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 
-router.patch("/:id/toggle-status", async (req, res) => {
+router.patch("/:id/toggle-status", protect, authorize("admin"), async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
 

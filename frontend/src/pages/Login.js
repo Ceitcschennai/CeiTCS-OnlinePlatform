@@ -13,28 +13,14 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    if (role === "admin") {
-      if (email === "mohanraj@ceitcs.com" && password === "Rishiindia@27") {
-        localStorage.clear();
-        localStorage.setItem("user", JSON.stringify({ email, role: "admin" }));
-        localStorage.setItem("userRole", "admin");
-        localStorage.setItem("role", "admin");
-        navigate("/admin-dashboard");
-      } else {
-        setError("Invalid admin credentials. Please try again.");
-      }
-      setLoading(false);
-      return;
-    }
-
     try {
-      const apiRole = role === "trainee" ? "teacher" : role;
-      const res = await axios.post(`${API_BASE_URL}/api/auth/${apiRole}/login`, {
+      const mappedRole = role === "trainee" ? "teacher" : role;
+      const res = await axios.post(`${API_BASE_URL}/api/auth/${mappedRole}/login`, {
         email,
         password,
       });
@@ -45,6 +31,12 @@ function Login() {
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("userRole", role);
         localStorage.setItem("role", role);
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userId", userData._id || userData.id);
+
+        if (role === "admin") {
+          navigate("/admin-dashboard");
+        }
 
         if (role === "trainee") {
           const traineeData = {

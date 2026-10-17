@@ -4,8 +4,37 @@
   const multer = require("multer");
   const Employee = require("../models/Employee");
   const EmailOtp = require("../models/EmailOtp");
+  const Course = require("../models/Course");
   const transporter = require("../config/email");
   const { upload } = require("../config/cloudinary");
+  const {
+    protect,
+    authorize,
+    ownershipOrAdmin,
+    getUserRole
+  } = require("../middleware/authMiddleware");
+
+  /* ============================================
+    SECURITY — EXPLICIT UPDATE WHITELIST
+    Participant (employee) self-edit: profile only
+    Admin edit: existing admin-panel fields kept
+    Never accepted from the client through this
+    route: password, isApproved (server derived)
+  ============================================ */
+  const PARTICIPANT_EDITABLE_FIELDS = [
+    "salutation",
+    "firstName",
+    "lastName",
+    "email",
+    "mobile",
+    "skills"
+  ];
+
+  const ADMIN_EDITABLE_FIELDS = [
+    "role",
+    "approvalStatus",
+    "paymentStatus"
+  ];
 
   /* ============================================
     EMAIL OTP — SEND OTP
@@ -134,7 +163,9 @@
         mobile,
         startTime,
         endTime,
-        salutation
+        salutation,
+        courseCode,
+        courseName
       } = req.body;
 
       // ✅ Validate required fields
@@ -197,6 +228,41 @@
       // ✅ Hash password
       const hashedPassword = await bcrypt.hash(password, 8);
 
+      /* ✅ Step 13 G1 — enrollment repair (existing flow only):
+         the course selection made during registration is persisted
+         into the EXISTING courseCode/courseName fields after being
+         resolved against the Course collection. An unresolvable
+         selection never blocks registration; existing validation,
+         faculty registration and all other fields are untouched. */
+      const requestedCode = String(courseCode || "").trim();
+      const requestedName = String(courseName || "").trim();
+      let enrolledCourse = null;
+
+      const escapeRegExp = (value) =>
+        String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      if (requestedCode) {
+        enrolledCourse =
+          (await Course.findOne({ courseCode: requestedCode }).maxTimeMS(8000)) ||
+          (await Course.findOne({
+            courseCode: {
+              $regex: `^${escapeRegExp(requestedCode)}$`,
+              $options: "i"
+            }
+          }).maxTimeMS(8000));
+      }
+
+      if (!enrolledCourse && requestedName) {
+        enrolledCourse =
+          (await Course.findOne({ courseName: requestedName }).maxTimeMS(8000)) ||
+          (await Course.findOne({
+            courseName: {
+              $regex: `^${escapeRegExp(requestedName)}$`,
+              $options: "i"
+            }
+          }).maxTimeMS(8000));
+      }
+
       // ✅ Create and save employee
       const employee = new Employee({
         salutation: salutation || "",
@@ -209,6 +275,8 @@
         startTime,
         endTime,
         proof: req.file ? req.file.path : null,
+        courseCode: enrolledCourse ? enrolledCourse.courseCode : undefined,
+        courseName: enrolledCourse ? enrolledCourse.courseName : undefined,
         approvalStatus: "Pending",
         paymentStatus: "Unpaid",
         isApproved: false,
@@ -256,7 +324,7 @@
     GET ALL EMPLOYEES
     GET /api/employee
   ============================================ */
-  router.get("/", async (req, res) => {
+  router.get("/", protect, authorize("admin"), async (req, res) => {
     try {
       const employees = await Employee.find()
         .sort({ registeredAt: -1 })
@@ -272,7 +340,7 @@
     ADD EMPLOYEE FROM ADMIN PANEL
     POST /api/employee/add
   ============================================ */
-  router.post("/add", async (req, res) => {
+  router.post("/add", protect, authorize("admin"), async (req, res) => {
     try {
       const {
         salutation,
@@ -319,34 +387,40 @@
     UPDATE EMPLOYEE
     PUT /api/employee/:id
   ============================================ */
-  router.put("/:id", async (req, res) => {
+  router.put("/:id", protect, ownershipOrAdmin, async (req, res) => {
     try {
-      const {
-        salutation,
-        firstName,
-        lastName,
-        email,
-        mobile,
-        role,
-        skills,
-        approvalStatus,
-        paymentStatus
-      } = req.body;
+      const requesterRole = getUserRole(req.user);
+
+      const allowedFields =
+        requesterRole === "admin"
+          ? [...PARTICIPANT_EDITABLE_FIELDS, ...ADMIN_EDITABLE_FIELDS]
+          : PARTICIPANT_EDITABLE_FIELDS;
+
+      const updateData = {};
+
+      allowedFields.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+          updateData[field] = req.body[field];
+        }
+      });
+
+      // Keep the existing approval sync logic for admins only.
+      if (
+        requesterRole === "admin" &&
+        Object.prototype.hasOwnProperty.call(req.body, "approvalStatus")
+      ) {
+        updateData.isApproved = req.body.approvalStatus === "Approved";
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({
+          message: "No valid fields to update"
+        });
+      }
 
       const updated = await Employee.findByIdAndUpdate(
         req.params.id,
-        {
-          salutation,
-          firstName,
-          lastName,
-          email,
-          mobile,
-          role,
-          skills,
-          approvalStatus,
-          paymentStatus,
-          isApproved: approvalStatus === "Approved"
-        },
+        updateData,
         { new: true }
       ).maxTimeMS(8000);
 
@@ -362,7 +436,7 @@
     APPROVE / REJECT EMPLOYEE
     PUT /api/employee/:id/approve
   ============================================ */
-  router.put("/:id/approve", async (req, res) => {
+  router.put("/:id/approve", protect, authorize("admin"), async (req, res) => {
     try {
       const { status, feedback} = req.body;
 
@@ -419,7 +493,7 @@
     TOGGLE PAYMENT STATUS
     PUT /api/employee/:id/payment
   ============================================ */
-  router.put("/:id/payment", async (req, res) => {
+  router.put("/:id/payment", protect, authorize("admin"), async (req, res) => {
     try {
       const employee = await Employee.findById(req.params.id).maxTimeMS(8000);
       if (!employee) return res.status(404).json({ message: "Employee not found" });
@@ -438,7 +512,7 @@
    TOGGLE ACTIVE / INACTIVE STATUS
    PUT /api/employee/:id/status
 ============================================ */
-router.put("/:id/status", async (req, res) => {
+router.put("/:id/status", protect, authorize("admin"), async (req, res) => {
   try {
     const employee = await Employee.findById(req.params.id)
       .maxTimeMS(8000);
@@ -475,16 +549,58 @@ router.put("/:id/status", async (req, res) => {
 
 
 /* ============================================
+   GET OWN / ANY PARTICIPANT PROFILE BY ID
+   GET /api/employee/:id
+   owner (same employee id) or admin only
+============================================ */
+router.get("/:id", protect, ownershipOrAdmin, async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id)
+      .select("-password")
+      .maxTimeMS(8000);
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    res.status(200).json(employee);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* ============================================
    GET PARTICIPANT ENROLLMENTS BY ID
    GET /api/employee/:id/enrollments
+   owner (same employee id) or admin only
 ============================================ */
-router.get("/:id/enrollments", async (req, res) => {
+router.get("/:id/enrollments", protect, ownershipOrAdmin, async (req, res) => {
   try {
     const employee = await Employee.findById(req.params.id).maxTimeMS(8000);
     if (!employee) return res.status(404).json({ message: "Employee not found" });
     
     res.status(200).json({ 
-      enrolledSubjects: employee.courseCode || [] 
+      // Step 13 H1/Issue 5: always an ARRAY — main course (when set)
+      // plus enrolled subjects; never a bare courseCode string
+      enrolledSubjects: [
+        ...(employee.courseCode
+          ? [{
+              courseCode: employee.courseCode,
+              courseName: employee.courseName || "",
+              mainCourse: true
+            }]
+          : []),
+        ...(Array.isArray(employee.enrolledSubjects)
+          ? employee.enrolledSubjects
+              .filter((subject) => subject && subject.courseCode)
+              .map((subject) => ({
+                courseCode: subject.courseCode,
+                courseName: subject.courseName || "",
+                enrolledAt: subject.enrolledAt
+              }))
+          : [])
+      ] 
     });
   } catch (err) {
     console.error(err);

@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '../config/api';
-import '../styles/manageparticipant.css';
+import '../styles/systemAlerts.css';
+import LMSCard from '../components/common/LMSCard';
+import LMSButton from '../components/common/LMSButton';
 import {
   FaExclamationTriangle,
   FaCheckCircle,
@@ -83,21 +85,12 @@ const SystemAlerts = () => {
     }
   };
 
-  const getIcon = (type) => {
+  const getAlertStyle = (type) => {
     switch (type) {
-      case 'warning': return <FaExclamationTriangle style={{ color: '#f59e0b' }} />;
-      case 'success': return <FaCheckCircle style={{ color: '#10b981' }} />;
-      case 'error': return <FaTimesCircle style={{ color: '#ef4444' }} />;
-      default: return <FaInfoCircle style={{ color: '#3b82f6' }} />;
-    }
-  };
-
-  const getBorderColor = (type) => {
-    switch (type) {
-      case 'warning': return '#f59e0b';
-      case 'success': return '#10b981';
-      case 'error': return '#ef4444';
-      default: return '#3b82f6';
+      case 'warning': return { icon: <FaExclamationTriangle />, color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' };
+      case 'success': return { icon: <FaCheckCircle />, color: '#10b981', bg: '#ecfdf5', border: '#a7f3d0' };
+      case 'error': return { icon: <FaTimesCircle />, color: '#ef4444', bg: '#fef2f2', border: '#fecaca' };
+      default: return { icon: <FaInfoCircle />, color: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe' };
     }
   };
 
@@ -110,172 +103,168 @@ const SystemAlerts = () => {
   ];
 
   return (
-    <div className="student-management-container">
-      {/* Header */}
-      <div className="student-management-header" style={{ background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)' }}>
-        <div className="student-header-content">
-          <h2>
-            <FaBell className="student-header-icon" />
+    <div className="sa-page">
+      {/* ── HEADER ── */}
+      <div className="sa-header">
+        <div className="sa-header-content">
+          <h2 className="sa-header-title">
+            <FaBell className="sa-header-icon" />
             System Alerts
           </h2>
-          <p>Monitor system notifications, warnings, and activity logs</p>
+          <p className="sa-header-subtitle">Monitor system notifications, warnings, and activity logs</p>
+        </div>
 
-          <div className="student-statistics-row">
-            <div className="student-stat-card">
-              <span className="student-stat-number" style={{ color: '#dc2626' }}>{alerts.length}</span>
-              <span className="student-stat-label">Total Alerts</span>
+        <div className="sa-stats-row">
+          <LMSCard className="sa-stat-card" hover>
+            <div className="sa-stat-inner">
+              <span className="sa-stat-value">{alerts.length}</span>
+              <span className="sa-stat-label">Total Alerts</span>
             </div>
-            <div className="student-stat-card">
-              <span className="student-stat-number" style={{ color: '#dc2626' }}>{unreadCount}</span>
-              <span className="student-stat-label">Unread</span>
+          </LMSCard>
+          <LMSCard className="sa-stat-card" hover>
+            <div className="sa-stat-inner">
+              <span className="sa-stat-value sa-stat-value--unread">{unreadCount}</span>
+              <span className="sa-stat-label">Unread</span>
             </div>
-            <div className="student-stat-card">
-              <span className="student-stat-number" style={{ color: '#dc2626' }}>
-                {alerts.filter(a => a.type === 'warning').length}
-              </span>
-              <span className="student-stat-label">Warnings</span>
+          </LMSCard>
+          <LMSCard className="sa-stat-card" hover>
+            <div className="sa-stat-inner">
+              <span className="sa-stat-value sa-stat-value--warning">{alerts.filter(a => a.type === 'warning').length}</span>
+              <span className="sa-stat-label">Warnings</span>
             </div>
-            <div className="student-stat-card">
-              <span className="student-stat-number" style={{ color: '#dc2626' }}>
-                {alerts.filter(a => a.type === 'error').length}
-              </span>
-              <span className="student-stat-label">Errors</span>
+          </LMSCard>
+          <LMSCard className="sa-stat-card" hover>
+            <div className="sa-stat-inner">
+              <span className="sa-stat-value sa-stat-value--error">{alerts.filter(a => a.type === 'error').length}</span>
+              <span className="sa-stat-label">Errors</span>
             </div>
-          </div>
+          </LMSCard>
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="students-controls">
-        <div className="controls-row">
-          <div className="search-container">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search alerts by title or message..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+      {/* ── CONTROLS ── */}
+      <div className="sa-controls">
+        <div className="sa-search-wrap">
+          <FaSearch className="sa-search-icon" />
+          <input
+            type="text"
+            className="sa-search-input"
+            placeholder="Search alerts by title or message..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-          <div className="controls-right">
-            <div className="filter-dropdown" style={{ position: 'relative' }}>
-              <button className="filter-btn" onClick={() => setShowFilterMenu(!showFilterMenu)}>
-                <FaFilter /> Filter
-              </button>
-              {showFilterMenu && (
-                <div className="filter-menu">
-                  {filterOptions.map(option => (
-                    <div
-                      key={option.value}
-                      className={`filter-option ${filterType === option.value ? 'active' : ''}`}
-                      onClick={() => { setFilterType(option.value); setShowFilterMenu(false); }}
-                    >
-                      {option.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {unreadCount > 0 && (
-              <button className="add-student-btn" onClick={markAllRead} style={{ background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)' }}>
-                <FaCheckCircle />
-                Mark All Read
-              </button>
+        <div className="sa-controls-right">
+          <div className="sa-filter-dropdown">
+            <LMSButton variant="secondary" onClick={() => setShowFilterMenu(!showFilterMenu)}>
+              <FaFilter /> Filter
+            </LMSButton>
+            {showFilterMenu && (
+              <div className="sa-filter-menu">
+                {filterOptions.map(option => (
+                  <div
+                    key={option.value}
+                    className={`sa-filter-option ${filterType === option.value ? 'sa-filter-option--active' : ''}`}
+                    onClick={() => { setFilterType(option.value); setShowFilterMenu(false); }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setFilterType(option.value); setShowFilterMenu(false); }}}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
+
+          {unreadCount > 0 && (
+            <LMSButton variant="primary" onClick={markAllRead}>
+              <FaCheckCircle /> Mark All Read
+            </LMSButton>
+          )}
         </div>
       </div>
 
-      {/* Alerts List */}
-      <div className="students-container">
+      {/* ── ALERTS LIST ── */}
+      <div className="sa-content">
         {loading ? (
-          <div className="students-loading-spinner">
-            <div className="students-spinner"></div>
+          <div className="sa-loading">
+            <div className="sa-spinner"></div>
             <p>Loading alerts...</p>
           </div>
         ) : filteredAlerts.length === 0 ? (
-          <div className="empty-state">
-            <FaBell className="empty-icon" />
+          <div className="sa-empty">
+            <FaBell className="sa-empty-icon" />
             <h3>No alerts found</h3>
             <p>All systems are running normally</p>
           </div>
         ) : (
-          <div className="students-grid">
-            {filteredAlerts.map((alert) => (
-              <div
-                key={alert._id}
-                className="student-card"
-                style={{
-                  borderLeft: `4px solid ${getBorderColor(alert.type)}`,
-                  opacity: alert.read ? 0.75 : 1
-                }}
-              >
-                <div className="student-card-header">
-                  <div className="student-profile">
-                    <div
-                      className="student-avatar"
-                      style={{ background: `linear-gradient(135deg, ${getBorderColor(alert.type)}22, ${getBorderColor(alert.type)}44)` }}
-                    >
-                      {getIcon(alert.type)}
-                    </div>
-                    <div className="student-info">
-                      <div className="student-name" style={{ fontSize: '1.1rem' }}>
-                        {alert.title}
+          <div className="sa-alerts-grid">
+            {filteredAlerts.map((alert) => {
+              const style = getAlertStyle(alert.type);
+              return (
+                <LMSCard
+                  key={alert._id}
+                  hover
+                  className="sa-alert-card"
+                  style={{
+                    borderLeft: `4px solid ${style.color}`,
+                    opacity: alert.read ? 0.75 : 1
+                  }}
+                >
+                  <div className="sa-card-header">
+                    <div className="sa-card-profile">
+                      <div
+                        className="sa-alert-icon"
+                        style={{ background: style.bg, color: style.color, borderColor: style.border }}
+                      >
+                        {style.icon}
                       </div>
-                      <div className="student-id">
-                        {new Date(alert.createdAt).toLocaleString()}
+                      <div className="sa-card-info">
+                        <div className="sa-alert-title">{alert.title}</div>
+                        <div className="sa-alert-date">
+                          {new Date(alert.createdAt).toLocaleString()}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="student-badges">
-                    {!alert.read && (
-                      <span className="status-badge status-pending">Unread</span>
-                    )}
-                    <span
-                      className="status-badge"
-                      style={{
-                        background: `${getBorderColor(alert.type)}22`,
-                        color: getBorderColor(alert.type),
-                        border: `1px solid ${getBorderColor(alert.type)}`
-                      }}
-                    >
-                      {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="student-card-body">
-                  <div className="student-detail-group" style={{ borderLeftColor: getBorderColor(alert.type) }}>
-                    <div className="student-detail-label">
-                      <FaInfoCircle /> Message
-                    </div>
-                    <div className="student-detail-value" style={{ fontWeight: 400, fontSize: '0.95rem' }}>
-                      {alert.message}
+                    <div className="sa-card-badges">
+                      {!alert.read && (
+                        <span className="sa-badge sa-badge--unread">Unread</span>
+                      )}
+                      <span
+                        className="sa-badge"
+                        style={{
+                          background: style.bg,
+                          color: style.color,
+                          border: `1px solid ${style.border}`
+                        }}
+                      >
+                        {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
+                      </span>
                     </div>
                   </div>
-                </div>
 
-                <div className="student-card-footer">
-                  <div className="student-registration-date">
-                    <FaBell />
-                    <span>{alert.read ? 'Read' : 'Unread'}</span>
+                  <div className="sa-card-body">
+                    <div className="sa-message-group" style={{ borderLeftColor: style.color }}>
+                      <div className="sa-message-label"><FaInfoCircle /> Message</div>
+                      <div className="sa-message-text">{alert.message}</div>
+                    </div>
                   </div>
-                  <div className="student-actions">
-                    <button
-                      onClick={() => handleDelete(alert._id)}
-                      className="action-btn btn-delete"
-                      title="Dismiss Alert"
-                    >
+
+                  <div className="sa-card-footer">
+                    <div className="sa-status-text">
+                      <FaBell />
+                      <span>{alert.read ? 'Read' : 'Unread'}</span>
+                    </div>
+                    <LMSButton variant="danger" onClick={() => handleDelete(alert._id)}>
                       <FaTrash /> Dismiss
-                    </button>
+                    </LMSButton>
                   </div>
-                </div>
-              </div>
-            ))}
+                </LMSCard>
+              );
+            })}
           </div>
         )}
       </div>

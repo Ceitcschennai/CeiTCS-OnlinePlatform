@@ -14,7 +14,8 @@ import {
   FaChalkboardTeacher,
   FaExclamationTriangle,
   FaCalendarAlt,
-  FaBell
+  FaBell,
+  FaComments
 } from 'react-icons/fa';
 
 import '../styles/sidebar.css';
@@ -23,12 +24,13 @@ const menuConfig = {
   common: [],
 
   employee: [
-    { to: '/employee-dashboard', icon: FaChartBar, label: 'Dashboard' },
+    { to: '/employee-dashboard', icon: FaChartBar, label: '(Participant)Dashboard' },
     { to: '/subjects', icon: FaBookOpen, label: 'Courses' },
     { to: '/assignments', icon: FaTasks, label: 'Assignments' },
     { to: '/queries', icon: FaQuestionCircle, label: 'Queries' },
-    { to: '/payments', icon: FaCreditCard, label: 'Payments' },
+    { to: '/payment-history', icon: FaCreditCard, label: 'Payments' },
     { to: '/live-class', icon: FaVideo, label: 'Live Class' },
+    { to: '/messages', icon: FaComments, label: 'Messages' },
     { to: '/participant-alerts', icon: FaBell, label: 'System Alerts' }
   ],
 
@@ -38,26 +40,29 @@ const menuConfig = {
     { to: '/take-attendance', icon: FaUserCheck, label: 'Attendance' },
     { to: '/student-queries', icon: FaQuestionCircle, label: 'Queries' },
     { to: '/live-class', icon: FaVideo, label: 'Live Class' },
+    { to: '/messages', icon: FaComments, label: 'Messages' },
     { to: '/teacher-alerts', icon: FaBell, label: 'System Alerts' }
   ],
 
   trainee: [
-    { to: '/teacher-dashboard', icon: FaChartBar, label: 'Dashboard' },
+    { to: '/teacher-dashboard', icon: FaChartBar, label: '(Faculty)Dashboard' },
     { to: '/teacher-subjects', icon: FaBookOpen, label: 'Courses' },
     { to: '/teacher-assignments', icon: FaTasks, label: 'Assignments' },
     { to: '/take-attendance', icon: FaUserCheck, label: 'Attendance' },
     { to: '/student-queries', icon: FaQuestionCircle, label: 'Queries' },
     { to: '/live-class', icon: FaVideo, label: 'Live Class' },
+    { to: '/messages', icon: FaComments, label: 'Messages' },
     { to: '/teacher-schedule', icon: FaCalendarAlt, label: 'Schedule' },
     { to: '/teacher-alerts', icon: FaBell, label: 'System Alerts' }
   ],
 
   admin: [
-    { to: '/admin-dashboard', icon: FaChartBar, label: 'Dashboard' },
+    { to: '/admin-dashboard', icon: FaChartBar, label: '(Admin)Dashboard' },
     { to: '/manage-employee', icon: FaUserGraduate, label: 'Participants' },
     { to: '/manage-teachers', icon: FaChalkboardTeacher, label: 'Faculty' },
     { to: '/manage-subjects', icon: FaBookOpen, label: 'Courses' },
-    { to: '/payments', icon: FaCreditCard, label: 'Payments' },
+    { to: '/manage-payments', icon: FaCreditCard, label: 'Payments' },
+    { to: '/messages', icon: FaComments, label: 'Messages' },
     { to: '/alerts', icon: FaExclamationTriangle, label: 'System Alerts' }
   ]
 };

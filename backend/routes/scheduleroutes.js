@@ -4,6 +4,12 @@ const Schedule = require('../models/schedule');
 const Employee = require('../models/Employee');
 const Teacher = require('../models/Teacher');
 const transporter = require('../config/email');
+const { protect, authorize } = require('../middleware/authMiddleware');
+const {
+  hasCourseAccess,
+  accessibleCourseCodes,
+  filterByCourseAccess
+} = require('../utils/courseAccess');
 
 const router = express.Router();
 
@@ -171,7 +177,6 @@ const findEligibleParticipants = async (courseCode, subject) => {
   const participantQuery = {
     courseCode: selectedCourseCode,
     isApproved: true,
-    paymentStatus: 'Paid',
     isActive: true,
     email: { $exists: true, $ne: null }
   };
@@ -180,7 +185,15 @@ const findEligibleParticipants = async (courseCode, subject) => {
   console.log('Schedule Course Code:', selectedCourseCode);
   console.log('Participant Query:', participantQuery);
 
-  const participants = await Employee.find(participantQuery).maxTimeMS(8000);
+  // Step 13 §14: payment eligibility for email delivery now uses the
+  // approved course-level access rule (manual account flag OR latest
+  // PAID payment for this exact course) instead of the raw
+  // Employee.paymentStatus field. Legitimate manual grants are kept.
+  const candidates = await Employee.find(participantQuery).maxTimeMS(8000);
+  const participants = await filterByCourseAccess(
+    selectedCourseCode,
+    candidates
+  );
   const emails = participants.map((participant) => participant.email);
 
   console.log('Matched Participants:', participants.length);
@@ -514,9 +527,11 @@ router.post('/cleanup', async (req, res) => {
 
 
 
-router.get("/employee/:employeeId", async (req, res) => {
+router.get("/employee/:employeeId", protect, authorize("employee"), async (req, res) => {
   try {
-    const employee = await Employee.findById(req.params.employeeId);
+    // Step 13 H1/Issue 3: identity comes from the JWT — the URL id
+    // is never trusted as the participant identity
+    const employee = await Employee.findById(req.user._id);
 
     if (!employee) {
       return res.status(404).json({
@@ -524,7 +539,10 @@ router.get("/employee/:employeeId", async (req, res) => {
       });
     }
 
-    if(employee.paymentStatus !== "Paid") {
+    // Approved access rule (A1+B2+C1+D1) for the main course
+    const allowed = await hasCourseAccess(req.user._id, employee.courseCode);
+
+    if (!allowed) {
       return res.status(403).json({
         message: "Employee is not eligible to view schedules"
       });
@@ -558,7 +576,7 @@ router.get("/employee/:employeeId", async (req, res) => {
 // GET SCHEDULES BY COURSECODES (for participants)
 // GET /api/schedules/by-codes?codes=Python01,MERN01
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/by-codes", async (req, res) => {
+router.get("/by-codes", protect, authorize("employee"), async (req, res) => {
   try {
     const { codes } = req.query;
     if (!codes) {
@@ -570,8 +588,41 @@ router.get("/by-codes", async (req, res) => {
       return res.status(400).json({ message: "Invalid course codes" });
     }
 
+    // Step 13 H1/Issue 2: only the authenticated participant's
+    // ENROLLED courses that pass the approved access rule are
+    // returned — no exposure of schedules/meeting links for
+    // courses the participant cannot access
+    const employee = await Employee.findById(req.user._id);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    const enrolled = new Set();
+    if (employee.courseCode) {
+      enrolled.add(String(employee.courseCode).trim().toLowerCase());
+    }
+    (Array.isArray(employee.enrolledSubjects)
+      ? employee.enrolledSubjects
+      : []
+    ).forEach((subject) => {
+      if (subject && subject.courseCode) {
+        enrolled.add(String(subject.courseCode).trim().toLowerCase());
+      }
+    });
+
+    const requestedEnrolled = codeArray.filter((c) =>
+      enrolled.has(c.toLowerCase())
+    );
+    const accessible = await accessibleCourseCodes(
+      req.user._id,
+      requestedEnrolled
+    );
+    const allowedCodes = requestedEnrolled.filter((c) =>
+      accessible.has(c.toLowerCase())
+    );
+
     const schedules = await Schedule.find({
-      courseCode: { $in: codeArray },
+      courseCode: { $in: allowedCodes },
       isActive: true
     }).sort({ startDate: 1 }).maxTimeMS(8000);
 

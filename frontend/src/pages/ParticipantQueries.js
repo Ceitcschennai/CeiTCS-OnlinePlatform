@@ -58,7 +58,8 @@ const ParticipantQueries = () => {
     try {
 
       const response = await axios.get(
-        `${API_BASE_URL}/api/queries/participant/${employeeId}/subjects`
+        `${API_BASE_URL}/api/queries/participant/${employeeId}/subjects`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
 
       if (response.data.success) {
@@ -129,7 +130,9 @@ const ParticipantQueries = () => {
       };
       console.log('Submitting Payload:', payload);
       
-      const response = await axios.post(`${API_BASE_URL}/api/queries/participant`, payload);
+      const response = await axios.post(`${API_BASE_URL}/api/queries/participant`, payload, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       if (response.status === 201) {
         alert('Query submitted successfully!');
         setForm({ courseCode: '', question: '', priority: 'Medium',});

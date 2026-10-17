@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/payments.css';
+import LMSCard from '../components/common/LMSCard';
+import LMSButton from '../components/common/LMSButton';
 import {
   FaCreditCard,
   FaHistory,
@@ -66,13 +68,13 @@ const Payments = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'Completed':
-        return <FaCheckCircle className="status-icon completed" />;
+        return <FaCheckCircle className="pay-status-icon pay-status-icon--completed" />;
       case 'Pending':
-        return <FaClock className="status-icon pending" />;
+        return <FaClock className="pay-status-icon pay-status-icon--pending" />;
       case 'Failed':
-        return <FaExclamationTriangle className="status-icon failed" />;
+        return <FaExclamationTriangle className="pay-status-icon pay-status-icon--failed" />;
       default:
-        return <FaClock className="status-icon pending" />;
+        return <FaClock className="pay-status-icon pay-status-icon--pending" />;
     }
   };
 
@@ -81,121 +83,127 @@ const Payments = () => {
   };
 
   return (
-    <div className="payments-container">
-      <div className="payments-header">
-        <h1>Payments</h1>
-        <p>Manage your fee payments and view payment history</p>
+    <div className="pay-page">
+
+      {/* ── HEADER ── */}
+      <div className="pay-header">
+        <h1 className="pay-header-title">Payments</h1>
+        <p className="pay-header-subtitle">Manage your fee payments and view payment history</p>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="tab-navigation">
-        <button 
-          className={`tab-button ${activeTab === 'payment' ? 'active' : ''}`}
+      {/* ── TAB NAVIGATION ── */}
+      <div className="pay-tabs" role="tablist">
+        <LMSButton
+          variant={activeTab === 'payment' ? 'primary' : 'secondary'}
           onClick={() => setActiveTab('payment')}
+          className="pay-tab-btn"
+          role="tab"
+          aria-selected={activeTab === 'payment'}
         >
-          <FaCreditCard className="tab-icon" />
-          Make Payment
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
+          <FaCreditCard /> Make Payment
+        </LMSButton>
+        <LMSButton
+          variant={activeTab === 'history' ? 'primary' : 'secondary'}
           onClick={() => setActiveTab('history')}
+          className="pay-tab-btn"
+          role="tab"
+          aria-selected={activeTab === 'history'}
         >
-          <FaHistory className="tab-icon" />
-          Payment History
-        </button>
+          <FaHistory /> Payment History
+        </LMSButton>
       </div>
 
-      {/* Tab Content */}
-      <div className="tab-content">
+      {/* ── TAB CONTENT ── */}
+      <div className="pay-content" role="tabpanel">
         {activeTab === 'payment' && (
-          <div className="payment-tab">
+          <div className="pay-tab-panel">
+
             {/* Outstanding Payments */}
-            <div className="section">
-              <h2 className="section-title">
-                <FaExclamationTriangle className="section-icon" />
+            <section className="pay-section">
+              <h2 className="pay-section-title">
+                <FaExclamationTriangle className="pay-section-icon" />
                 Outstanding Payments
               </h2>
               {pendingPayments.length > 0 ? (
-                <div className="payments-grid">
+                <div className="pay-cards-grid">
                   {pendingPayments.map((payment) => (
-                    <div key={payment.id} className="payment-card pending">
-                      <div className="payment-header">
-                        <div className="payment-info">
-                          <h3>{payment.description}</h3>
-                          <p className="payment-id">Payment ID: {payment.id}</p>
+                    <LMSCard key={payment.id} className="pay-card pay-card--pending" hover>
+                      <div className="pay-card-header">
+                        <div className="pay-card-info">
+                          <h3 className="pay-card-title">{payment.description}</h3>
+                          <p className="pay-card-id">Payment ID: {payment.id}</p>
                         </div>
                         {getStatusIcon(payment.status)}
                       </div>
-                      
-                      <div className="payment-details">
-                        <div className="detail-item">
-                          <FaCalendarAlt className="detail-icon" />
+
+                      <div className="pay-card-details">
+                        <div className="pay-detail-row">
+                          <FaCalendarAlt className="pay-detail-icon" />
                           <span>Due Date: {new Date(payment.dueDate).toLocaleDateString()}</span>
                         </div>
-                        <div className="detail-item">
-                          <FaRupeeSign className="detail-icon" />
+                        <div className="pay-detail-row">
+                          <FaRupeeSign className="pay-detail-icon" />
                           <span>Amount: ₹{payment.amount.toLocaleString()}</span>
                         </div>
                       </div>
 
-                      <div className="payment-actions">
-                        <button 
-                          className="pay-button"
-                          onClick={() => handlePayment(payment.id)}
-                        >
+                      <div className="pay-card-footer">
+                        <LMSButton variant="primary" onClick={() => handlePayment(payment.id)} fullWidth>
                           Pay Now
-                        </button>
+                        </LMSButton>
                       </div>
-                    </div>
+                    </LMSCard>
                   ))}
                 </div>
               ) : (
-                <div className="no-payments">
-                  <FaCheckCircle className="no-payments-icon" />
+                <div className="pay-empty">
+                  <FaCheckCircle className="pay-empty-icon" />
                   <h3>All payments are up to date!</h3>
                   <p>You have no outstanding payments at this time.</p>
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Payment Methods */}
-            <div className="section">
-              <h2 className="section-title">
-                <FaCreditCard className="section-icon" />
+            <section className="pay-section">
+              <h2 className="pay-section-title">
+                <FaCreditCard className="pay-section-icon" />
                 Payment Methods
               </h2>
-              <div className="payment-methods">
-                <div className="method-card">
-                  <FaCreditCard className="method-icon" />
+              <div className="pay-methods-grid">
+                <LMSCard className="pay-method-card" hover>
+                  <FaCreditCard className="pay-method-icon" />
                   <h4>Credit/Debit Card</h4>
                   <p>Pay securely with your card</p>
-                </div>
-                <div className="method-card">
-                  <FaRupeeSign className="method-icon" />
+                </LMSCard>
+                <LMSCard className="pay-method-card" hover>
+                  <FaRupeeSign className="pay-method-icon" />
                   <h4>UPI</h4>
                   <p>Quick payment via UPI apps</p>
-                </div>
-                <div className="method-card">
-                  <FaUser className="method-icon" />
+                </LMSCard>
+                <LMSCard className="pay-method-card" hover>
+                  <FaUser className="pay-method-icon" />
                   <h4>Net Banking</h4>
                   <p>Direct bank transfer</p>
-                </div>
+                </LMSCard>
               </div>
-            </div>
+            </section>
           </div>
         )}
 
         {activeTab === 'history' && (
-          <div className="history-tab">
-            <div className="section">
-              <h2 className="section-title">
-                <FaHistory className="section-icon" />
+          <div className="pay-tab-panel">
+
+            {/* Payment History */}
+            <section className="pay-section">
+              <h2 className="pay-section-title">
+                <FaHistory className="pay-section-icon" />
                 Payment History
               </h2>
-              
+
               {paymentHistory.length > 0 ? (
-                <div className="history-table-container">
-                  <table className="history-table">
+                <div className="pay-table-scroll">
+                  <table className="pay-table">
                     <thead>
                       <tr>
                         <th>Date</th>
@@ -212,20 +220,19 @@ const Payments = () => {
                         <tr key={payment.id}>
                           <td>{new Date(payment.date).toLocaleDateString()}</td>
                           <td>{payment.description}</td>
-                          <td className="amount">₹{payment.amount.toLocaleString()}</td>
+                          <td className="pay-amount-col">₹{payment.amount.toLocaleString()}</td>
                           <td>{payment.method}</td>
                           <td>
-                            <span className={`status-badge ${getStatusClass(payment.status)}`}>
+                            <span className={`pay-status-badge pay-status-badge--${getStatusClass(payment.status)}`}>
                               {getStatusIcon(payment.status)}
                               {payment.status}
                             </span>
                           </td>
-                          <td className="transaction-id">{payment.transactionId}</td>
+                          <td className="pay-txn-col">{payment.transactionId}</td>
                           <td>
-                            <button className="download-button">
-                              <FaFileInvoice />
-                              Receipt
-                            </button>
+                            <LMSButton variant="outline" onClick={() => {}}>
+                              <FaFileInvoice /> Receipt
+                            </LMSButton>
                           </td>
                         </tr>
                       ))}
@@ -233,38 +240,38 @@ const Payments = () => {
                   </table>
                 </div>
               ) : (
-                <div className="no-history">
-                  <FaHistory className="no-history-icon" />
+                <div className="pay-empty">
+                  <FaHistory className="pay-empty-icon" />
                   <h3>No payment history found</h3>
                   <p>Your payment history will appear here once you make payments.</p>
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Payment Summary */}
-            <div className="section">
-              <h2 className="section-title">
-                <FaRupeeSign className="section-icon" />
+            <section className="pay-section">
+              <h2 className="pay-section-title">
+                <FaRupeeSign className="pay-section-icon" />
                 Payment Summary
               </h2>
-              <div className="summary-grid">
-                <div className="summary-card">
-                  <h3>Total Paid</h3>
-                  <p className="summary-amount">₹{paymentHistory.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString()}</p>
-                  <span className="summary-period">This Year</span>
-                </div>
-                <div className="summary-card">
-                  <h3>Pending Payments</h3>
-                  <p className="summary-amount">₹{pendingPayments.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString()}</p>
-                  <span className="summary-period">Outstanding</span>
-                </div>
-                <div className="summary-card">
-                  <h3>Last Payment</h3>
-                  <p className="summary-amount">₹{paymentHistory[0]?.amount.toLocaleString() || '0'}</p>
-                  <span className="summary-period">{paymentHistory[0] ? new Date(paymentHistory[0].date).toLocaleDateString() : 'N/A'}</span>
-                </div>
+              <div className="pay-summary-grid">
+                <LMSCard className="pay-summary-card" hover>
+                  <h3 className="pay-summary-label">Total Paid</h3>
+                  <p className="pay-summary-amount">₹{paymentHistory.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString()}</p>
+                  <span className="pay-summary-period">This Year</span>
+                </LMSCard>
+                <LMSCard className="pay-summary-card" hover>
+                  <h3 className="pay-summary-label">Pending Payments</h3>
+                  <p className="pay-summary-amount">₹{pendingPayments.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString()}</p>
+                  <span className="pay-summary-period">Outstanding</span>
+                </LMSCard>
+                <LMSCard className="pay-summary-card" hover>
+                  <h3 className="pay-summary-label">Last Payment</h3>
+                  <p className="pay-summary-amount">₹{paymentHistory[0]?.amount.toLocaleString() || '0'}</p>
+                  <span className="pay-summary-period">{paymentHistory[0] ? new Date(paymentHistory[0].date).toLocaleDateString() : 'N/A'}</span>
+                </LMSCard>
               </div>
-            </div>
+            </section>
           </div>
         )}
       </div>

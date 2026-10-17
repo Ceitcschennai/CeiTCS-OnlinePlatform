@@ -1,72 +1,165 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../config/api';
 import '../styles/paymentHistory.css';
+
+/* ============================================
+   BACKEND STATUS -> EXISTING UI STATUS
+   Payment.status is PENDING / PAID / REJECTED.
+   This page (and its CSS) already styles
+   completed / pending / overdue / unknown, so the
+   backend status is mapped without renaming the UI.
+   "overdue" is NOT produced by the Payment model,
+   therefore no overdue payment is ever fabricated.
+============================================ */
+const mapStatusToUi = (status) => {
+  switch (String(status || '').toUpperCase()) {
+    case 'PAID':
+      return 'completed';
+    case 'PENDING':
+      return 'pending';
+    case 'REJECTED':
+      return 'rejected';
+    default:
+      return 'unknown';
+  }
+};
+
+/* Convert a stored Payment document into the shape this page renders.
+   billNumber (when present) is carried through so the receipt action
+   can be gated on the persisted backend value — never generated here. */
+const toUiPayment = (payment) => {
+  const amount = Number(payment.amount) || 0;
+
+  return {
+    id: payment._id || payment.id,
+    transactionId: payment.transactionId || '',
+    paymentFor: payment.courseName || payment.courseCode || 'Course Payment',
+    amount,
+    date: payment.paymentDate
+      ? new Date(payment.paymentDate).toISOString().split('T')[0]
+      : '',
+    status: mapStatusToUi(payment.status),
+    rawStatus: String(payment.status || '').toUpperCase(),
+    billNumber: payment.billNumber || '',
+    method: payment.paymentMethod || ''
+  };
+};
 
 const PaymentHistory = () => {
   const navigate = useNavigate();
-  const [paymentHistory] = useState([
-    {
-      id: 1,
-      transactionId: 'TXN1234567890',
-      paymentFor: 'Mathematics Tuition - Monthly Fee',
-      amount: 1500,
-      date: '2025-07-15',
-      status: 'completed',
-      method: 'UPI',
-      nextDueDate: '2025-08-15'
-    },
-    {
-      id: 2,
-      transactionId: 'TXN1234567891',
-      paymentFor: 'Physics Tuition - Monthly Fee',
-      amount: 1200,
-      date: '2025-07-10',
-      status: 'completed',
-      method: 'Credit Card',
-      nextDueDate: '2025-08-10'
-    },
-    {
-      id: 3,
-      transactionId: 'TXN1234567892',
-      paymentFor: 'Chemistry Lab Fee',
-      amount: 500,
-      date: '2025-07-05',
-      status: 'completed',
-      method: 'Net Banking',
-      nextDueDate: '2025-08-05'
-    },
-    {
-      id: 4,
-      transactionId: 'TXN1234567893',
-      paymentFor: 'English Extra Classes',
-      amount: 800,
-      date: '2025-06-28',
-      status: 'completed',
-      method: 'UPI',
-      nextDueDate: '2025-07-28'
-    }
-  ]);
+  // ░░ PAYMENT DATA (backend driven) ░░
+  // Source: GET /api/payments/my-payments (owner scoped by the JWT).
+  // The previously hardcoded demo records were removed; only this
+  // logged-in participant's own stored payments are rendered.
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [pendingPayments] = useState([
-    {
-      id: 1,
-      paymentFor: 'Mathematics Tuition - Monthly Fee',
-      amount: 1500,
-      dueDate: '2025-07-25',
-      status: 'pending',
-      daysOverdue: 0
-    },
-    {
-      id: 2,
-      paymentFor: 'Biology Practical Fee',
-      amount: 600,
-      dueDate: '2025-07-20',
-      status: 'overdue',
-      daysOverdue: 5
-    }
-  ]);
+  const [pendingPayments, setPendingPayments] = useState([]);
 
-  const totalPaid = paymentHistory.reduce((sum, payment) => sum + payment.amount, 0);
+  // Receipt-download state (backend receipt endpoint is the source of truth)
+  const [receiptLoadingId, setReceiptLoadingId] = useState(null);
+  const [receiptError, setReceiptError] = useState("");
+
+  // Load the logged-in participant's OWN payments using the existing JWT
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPayments = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setError("Please log in to view your payment history.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/payments/my-payments`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          if (!cancelled) {
+            setError("Your session has expired. Please log in again.");
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (res.status === 403) {
+          if (!cancelled) {
+            setError("You are not authorised to view this payment history.");
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (!res.ok) {
+          if (!cancelled) {
+            setError("Unable to load payment history. Please try again.");
+            setLoading(false);
+          }
+          return;
+        }
+
+        const data = await res.json();
+        const list = Array.isArray(data.payments) ? data.payments : [];
+        const uiPayments = list.map(toUiPayment);
+
+        if (!cancelled) {
+          setPaymentHistory(uiPayments);
+          setPendingPayments(
+            uiPayments.filter(payment => payment.status === "pending")
+          );
+          setError("");
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError("Unable to load payment history. Please try again.");
+          setLoading(false);
+        }
+      }
+    };
+
+    loadPayments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* Secure bill-download email link (?bill=<paymentId>): after the
+     participant signs in and their OWN payments load, auto-download
+     the matching approved bill. Backend ownership checks always run;
+     a non-matching or non-approved id is ignored silently. */
+  useEffect(() => {
+    if (loading || paymentHistory.length === 0) return;
+    let billId = "";
+    try {
+      billId = new URLSearchParams(window.location.search).get("bill") || "";
+    } catch { billId = ""; }
+    if (!billId) return;
+    const match = paymentHistory.find(
+      (p) => String(p.id) === String(billId) && p.status === "completed" && p.billNumber
+    );
+    if (match) {
+      downloadReceipt(match);
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("bill");
+        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+      } catch { /* keep URL unchanged */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, paymentHistory]);
+
+  // Only PAID records are counted as "Total Paid"
+  const totalPaid = paymentHistory
+    .filter(payment => payment.status === 'completed')
+    .reduce((sum, payment) => sum + payment.amount, 0);
   const totalPending = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
   const getStatusIcon = (status) => {
@@ -77,6 +170,8 @@ const PaymentHistory = () => {
         return 'PENDING';
       case 'overdue':
         return 'OVERDUE';
+      case 'rejected':
+        return 'REJECTED';
       default:
         return 'UNKNOWN';
     }
@@ -90,39 +185,100 @@ const PaymentHistory = () => {
         return 'status-pending';
       case 'overdue':
         return 'status-overdue';
+      case 'rejected':
+        // reuses the existing red badge style (no CSS change)
+        return 'status-overdue';
       default:
         return 'status-unknown';
     }
   };
 
-  const downloadReceipt = (payment) => {
-    // Create a simple text receipt
-    const receiptContent = `
-ONLINE TUITION PAYMENT RECEIPT
-================================
+  /* Official bill PDF comes ONLY from the authenticated backend
+     endpoint GET /api/payments/:id/bill-pdf (PAID + persisted
+     billNumber, owner-or-admin). Genuine PDF bytes are downloaded
+     with a safe filename based on the persisted bill number. */
+  const downloadReceipt = async (payment) => {
+    setReceiptError("");
 
-Transaction ID: ${payment.transactionId}
-Date: ${payment.date}
-Payment For: ${payment.paymentFor}
-Amount: ₹${payment.amount}
-Payment Method: ${payment.method}
-Status: ${payment.status.toUpperCase()}
+    if (!payment || payment.status !== 'completed' || !payment.billNumber) {
+      setReceiptError("Official receipt is not available for this payment.");
+      return;
+    }
 
-Thank you for your payment!
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setReceiptError("Please log in again to download your receipt.");
+      return;
+    }
 
-Contact: support@onlinetuition.com
-Phone: +91 98765 43210
-    `;
+    setReceiptLoadingId(payment.id);
 
-    const blob = new Blob([receiptContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `receipt-${payment.transactionId}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/payments/${payment.id}/bill-pdf`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 401) {
+        setReceiptError("Your session has expired. Please log in again.");
+        return;
+      }
+
+      if (res.status === 403) {
+        setReceiptError("You are not authorised to access this receipt.");
+        return;
+      }
+
+      if (res.status === 404) {
+        setReceiptError("Receipt not found for this payment.");
+        return;
+      }
+
+      if (res.status === 409) {
+        let detail = "";
+        try {
+          const errData = await res.json();
+          detail = errData && errData.message ? ` (${errData.message})` : "";
+        } catch (e) { /* keep generic message */ }
+        setReceiptError(`Official receipt is not available for this payment${detail}.`);
+        return;
+      }
+
+      if (!res.ok) {
+        setReceiptError("Unable to download receipt. Please try again.");
+        return;
+      }
+
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/pdf")) {
+        let detail = "";
+        try {
+          const errData = await res.json();
+          detail = errData && errData.message ? ` (${errData.message})` : "";
+        } catch (e) { /* keep generic message */ }
+        setReceiptError(`Official receipt is not available for this payment${detail}.`);
+        return;
+      }
+
+      const blob = await res.blob();
+      if (!blob || blob.size === 0) {
+        setReceiptError("Official receipt is not available for this payment.");
+        return;
+      }
+
+      const safeBill = String(payment.billNumber || "bill").replace(/[^A-Za-z0-9-_]/g, "-");
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${safeBill}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setReceiptError("Unable to download receipt. Please try again.");
+    } finally {
+      setReceiptLoadingId(null);
+    }
   };
 
   return (
@@ -174,7 +330,7 @@ Phone: +91 98765 43210
                   <div className="payment-info">
                     <h4>{payment.paymentFor}</h4>
                     <p className="amount">₹{payment.amount.toLocaleString()}</p>
-                    <p className="due-date">Due: {new Date(payment.dueDate).toLocaleDateString('en-IN', { 
+                    <p className="due-date">Submitted: {new Date(payment.date).toLocaleDateString('en-IN', { 
                       year: 'numeric', 
                       month: 'short', 
                       day: 'numeric' 
@@ -204,6 +360,9 @@ Phone: +91 98765 43210
       {/* Payment History Table */}
       <div className="payment-history-section">
         <h3>Payment History</h3>
+        {receiptError && (
+          <p className="receipt-error" role="alert">{receiptError}</p>
+        )}
         <div className="payment-table-container">
           <table className="payment-table">
             <thead>
@@ -231,13 +390,28 @@ Phone: +91 98765 43210
                     </span>
                   </td>
                   <td data-label="Actions">
-                    <button 
-                      className="download-btn"
-                      onClick={() => downloadReceipt(payment)}
-                      title="Download Receipt"
-                    >
-                      Download
-                    </button>
+                    {payment.status === 'completed' && payment.billNumber ? (
+                      <button
+                        className="download-btn"
+                        onClick={() => downloadReceipt(payment)}
+                        disabled={receiptLoadingId === payment.id}
+                        title={`Download official bill PDF (${payment.billNumber})`}
+                      >
+                        {receiptLoadingId === payment.id ? "Loading..." : "Bill (PDF)"}
+                      </button>
+                    ) : payment.status === 'completed' ? (
+                      <span className="receipt-unavailable" title="This paid payment has no persisted bill number">
+                        Receipt unavailable
+                      </span>
+                    ) : payment.status === 'pending' ? (
+                      <span className="receipt-unavailable" title="Payment is awaiting admin verification">
+                        Awaiting verification
+                      </span>
+                    ) : payment.status === 'rejected' ? (
+                      <span className="receipt-unavailable" title="Payment was rejected">
+                        Rejected
+                      </span>
+                    ) : null}
                   </td>
                 </tr>
               ))}
@@ -252,8 +426,8 @@ Phone: +91 98765 43210
           <div className="empty-icon">
             <span className="icon-text">NO DATA</span>
           </div>
-          <h3>No Payment History</h3>
-          <p>Your payment history will appear here once you make your first payment.</p>
+          <h3>{loading ? 'Loading Payment History' : error ? 'Unable to Load Payment History' : 'No Payment History'}</h3>
+          <p>{loading ? 'Fetching your payments from the server...' : error || 'Your payment history will appear here once you make your first payment.'}</p>
         </div>
       )}
     </div>

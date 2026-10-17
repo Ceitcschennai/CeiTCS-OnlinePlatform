@@ -1,0 +1,19 @@
+/* LMSButton Component-Specific Styles */
+/* Note: Base .btn-lms styles defined in design-system.css - ensure it is imported in parent component or App.css */
+
+/* Full width modifier - component specific */
+.btn-lms-full-width {
+  width: 100%;
+}
+
+/* Warning variant - missing from design-system.css */
+.btn-lms-warning {
+  background: var(--lms-gradient-warning);
+  color: var(--lms-text-inverse);
+  box-shadow: var(--lms-shadow);
+}
+
+.btn-lms-warning:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--lms-shadow-md);
+}

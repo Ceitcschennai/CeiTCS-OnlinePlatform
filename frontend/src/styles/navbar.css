@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@400;500;700&display=swap');
+/* Navbar Styles - Uses LMS Design System */
+@import url('./design-system.css');
 
 *{
   margin:0;
@@ -6,410 +7,254 @@
   box-sizing:border-box;
 }
 
-/* =========================
-   NAVBAR
-========================= */
+/* ═══════════════════════════════════════════════════
+   NAVBAR - Professional Enterprise Layout
+═════════════════════════════════════════════════ */
 
 .navbar{
-
   width:100%;
-
-  height:85px;
-
-  background:#ffffff;
-
+  height:var(--lms-space-16);
+  background:var(--lms-surface);
   display:grid;
-
   grid-template-columns:1fr auto 1fr;
-
   align-items:center;
-
-  padding:0 45px;
-
-  border-bottom:1px solid #e5e7eb;
-
+  padding:0 var(--lms-space-6);
+  border-bottom:1px solid var(--lms-border);
   position:sticky;
-
   top:0;
-
   z-index:999;
-
-  font-family:'DM Sans',sans-serif;
+  font-family:var(--lms-font-sans);
 }
 
-/* =========================
-   BRAND
-========================= */
-
+/* ── BRAND ── */
 .navbar-brand{
-
   display:flex;
-
   align-items:center;
-
-  gap:14px;
-
+  gap:var(--lms-space-3);
   text-decoration:none;
 }
 
 .logo{
-
-  height:62px;
-
+  height:calc(var(--lms-space-12) * 0.875);
   width:auto;
-
   object-fit:contain;
 }
 
 .brand-text{
-
   display:flex;
-
   flex-direction:column;
 }
 
 .brand-text h1{
-
-  font-size:24px;
-
-  font-weight:900;
-
-  color:#0f172a;
-
-  font-family:'Nunito',sans-serif;
-
-  line-height:1;
+  font-size:var(--lms-text-xl);
+  font-weight:var(--lms-font-extrabold);
+  color:var(--lms-text-primary);
+  line-height:var(--lms-leading-tight);
 }
 
 .brand-text p{
-
-  margin-top:4px;
-
-  color:#0891b2;
-
-  font-size:13px;
-
-  font-weight:700;
-
-  letter-spacing:1px;
+  margin-top:var(--lms-space-1);
+  color:var(--lms-info);
+  font-size:var(--lms-text-sm);
+  font-weight:var(--lms-font-semibold);
 }
 
-/* =========================
-   CENTER LINKS
-========================= */
-
+/* ── CENTER LINKS ── */
 .navbar-links{
-
   display:flex;
-
   align-items:center;
-
-  gap:20px;
+  gap:var(--lms-space-4);
 }
 
 .nav-link{
-
   text-decoration:none;
-
-  color:#1e293b !important;
-
-  font-size:17px;
-
-  font-weight:700;
-
-  padding:10px 18px;
-
-  border-radius:12px;
-
-  transition:0.2s;
+  color:var(--lms-text-primary) !important;
+  font-size:var(--lms-text-base);
+  font-weight:var(--lms-font-semibold);
+  padding:var(--lms-space-2) var(--lms-space-4);
+  border-radius:var(--lms-radius-md);
+  transition:all var(--lms-transition-fast);
 }
-
-/* HOVER */
 
 .nav-link:hover{
-
-  background:#f1f5f9;
-
-  color:#0891b2 !important;
+  background:var(--lms-background);
+  color:var(--lms-primary) !important;
 }
-
-/* ACTIVE */
 
 .active-link{
-
-  background:#ecfeff;
-
-  color:#0891b2 !important;
+  background:var(--lms-background-alt);
+  color:var(--lms-primary) !important;
 }
 
-/* =========================
-   RIGHT SIDE
-========================= */
-
+/* ── RIGHT SIDE ── */
 .navbar-right{
-
   display:flex;
-
   align-items:center;
-
   justify-self:end;
-
-  gap:14px;
+  gap:var(--lms-space-3);
 }
 
-/* =========================
-   REGISTER
-========================= */
-
+/* ── BUTTONS ── */
 .register-btn{
-
   text-decoration:none;
-
-  background:linear-gradient(
-    135deg,
-    #0891b2,
-    #0e7490
-  );
-
-  color:white;
-
-  padding:11px 24px;
-
-  border-radius:999px;
-
-  font-size:16px;
-
-  font-weight:700;
-
-  transition:0.2s;
+  background:var(--lms-info);
+  color:var(--lms-text-inverse);
+  padding:var(--lms-space-2) var(--lms-space-5);
+  border-radius:var(--lms-radius-full);
+  font-size:var(--lms-text-base);
+  font-weight:var(--lms-font-semibold);
+  transition:all var(--lms-transition-fast);
 }
 
 .register-btn:hover{
-
-  transform:translateY(-2px);
+  opacity:0.9;
 }
 
-/* =========================
-   LOGOUT
-========================= */
-
 .logout-btn{
-
   border:none;
-
-  background:#f97316;
-
-  color:white;
-
-  padding:11px 28px;
-
-  border-radius:999px;
-
-  font-size:16px;
-
-  font-weight:700;
-
+  background:var(--lms-warning);
+  color:var(--lms-text-inverse);
+  padding:var(--lms-space-2) var(--lms-space-5);
+  border-radius:var(--lms-radius-full);
+  font-size:var(--lms-text-base);
+  font-weight:var(--lms-font-semibold);
   cursor:pointer;
-
-  transition:0.2s;
+  transition:all var(--lms-transition-fast);
 }
 
 .logout-btn:hover{
-
-  background:#ea580c;
+  opacity:0.9;
 }
 
-
-.dashboard-btn {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-right: 10px;
-  font-weight: 600;
-}
-
-.dashboard-btn:hover {
-  background: #1d4ed8;
-}
-
-
-/* =========================
-   MOBILE BUTTON
-========================= */
-
-.menu-btn{
-
-  display:none;
-
-  justify-self:end;
-
+.dashboard-btn{
+  background:var(--lms-primary);
+  color:var(--lms-text-inverse);
   border:none;
+  padding:var(--lms-space-2) var(--lms-space-4);
+  border-radius:var(--lms-radius);
+  cursor:pointer;
+  margin-right:var(--lms-space-2);
+  font-weight:var(--lms-font-medium);
+}
 
+.dashboard-btn:hover{
+  background:var(--lms-primary-dark);
+}
+
+/* ── MOBILE BUTTON ── */
+.menu-btn{
+  display:none;
+  justify-self:end;
+  border:none;
   background:none;
-
-  font-size:30px;
-
+  font-size:var(--lms-text-2xl);
   cursor:pointer;
 }
 
-/* =========================
-   MOBILE MENU
-========================= */
-
+/* ── MOBILE MENU ── */
 .mobile-menu{
-
   position:absolute;
-
-  top:85px;
-
+  top:var(--lms-space-16);
   left:0;
-
   width:100%;
-
-  background:white;
-
+  background:var(--lms-surface);
   display:flex;
-
   flex-direction:column;
-
-  padding:20px;
-
-  gap:12px;
-
-  border-top:1px solid #e5e7eb;
+  padding:var(--lms-space-4);
+  gap:var(--lms-space-2);
+  border-top:1px solid var(--lms-border);
 }
 
 .mobile-link{
-
   text-decoration:none;
-
-  color:#1e293b;
-
-  font-weight:700;
-
-  padding:12px;
-
-  border-radius:10px;
+  color:var(--lms-text-primary);
+  font-weight:var(--lms-font-semibold);
+  padding:var(--lms-space-2);
+  border-radius:var(--lms-radius-md);
 }
 
 .mobile-link:hover{
-
-  background:#f1f5f9;
+  background:var(--lms-background);
 }
 
 .mobile-register{
-
-  background:#0891b2;
-
-  color:white;
-
+  background:var(--lms-info);
+  color:var(--lms-text-inverse);
   text-align:center;
-
-  padding:12px;
-
-  border-radius:999px;
-
+  padding:var(--lms-space-2);
+  border-radius:var(--lms-radius-full);
   text-decoration:none;
-
-  font-weight:700;
+  font-weight:var(--lms-font-semibold);
 }
 
 .mobile-logout{
-
   border:none;
-
-  background:#f97316;
-
-  color:white;
-
-  padding:12px;
-
-  border-radius:999px;
-
-  font-weight:700;
-
+  background:var(--lms-warning);
+  color:var(--lms-text-inverse);
+  padding:var(--lms-space-2);
+  border-radius:var(--lms-radius-full);
+  font-weight:var(--lms-font-semibold);
   cursor:pointer;
 }
 
-.mobile-dashboard {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.mobile-dashboard{
+  width:100%;
+  padding:var(--lms-space-2);
+  margin-bottom:var(--lms-space-2);
+  background:var(--lms-primary);
+  color:var(--lms-text-inverse);
+  border:none;
+  border-radius:var(--lms-radius);
+  cursor:pointer;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media(max-width:900px){
-
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
   .navbar{
-
     grid-template-columns:auto 1fr auto;
-
-    padding:0 20px;
+    padding:0 var(--lms-space-4);
   }
 
   .navbar-links{
-
     display:none;
   }
 
   .navbar-right{
-
     display:none;
   }
 
   .menu-btn{
-
     display:block;
   }
 
   .logo{
-
-    height:48px;
+    height:calc(var(--lms-space-12) * 0.67);
   }
 
   .brand-text h1{
-
-    font-size:18px;
+    font-size:var(--lms-text-lg);
   }
 
   .brand-text p{
-
-    font-size:9px;
+    font-size:calc(var(--lms-text-xs) * 1.125);
   }
 }
 
-@media(max-width:500px){
-
+@media (max-width: 500px) {
   .navbar{
-
-    height:75px;
-
-    padding:0 14px;
+    height:calc(var(--lms-space-16) * 0.9375);
+    padding:0 var(--lms-space-3);
   }
 
   .logo{
-
-    height:40px;
+    height:calc(var(--lms-space-12) * 0.5);
   }
 
   .brand-text h1{
-
-    font-size:15px;
+    font-size:calc(var(--lms-text-base) * 1.125);
   }
 
   .brand-text p{
-
-    font-size:8px;
+    font-size:calc(var(--lms-text-xs) * 1);
   }
 }

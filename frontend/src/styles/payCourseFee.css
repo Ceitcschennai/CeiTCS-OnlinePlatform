@@ -1,0 +1,35 @@
+.pcf-page { min-height: 60vh; display: flex; justify-content: center; padding: 32px 16px; background: #f4f6f9; }
+.pcf-card { width: 100%; max-width: 560px; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 28px 24px; box-shadow: 0 8px 28px rgba(15,23,42,.08); }
+.pcf-card h1 { font-size: 24px; margin: 0 0 12px; color: #111827; }
+.pcf-card h2 { font-size: 18px; margin: 18px 0 12px; color: #111827; }
+.pcf-course p { margin: 6px 0; color: #1f2937; }
+.pcf-hint { color: #6b7280; font-size: 13px; }
+.pcf-divider { border: none; border-top: 1px solid #e5e7eb; margin: 18px 0; }
+.pcf-qr { display: block; width: 100%; max-width: 340px; height: auto; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 0; background: #fff; padding: 10px; image-rendering: auto; }
+.pcf-fullsize-link { text-align: center; margin-top: 10px; }
+.pcf-form { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.pcf-form label { font-weight: 600; font-size: 14px; color: #111827; }
+.pcf-form input { padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; }
+.pcf-btn { padding: 11px 16px; border: none; border-radius: 10px; background: #0d9488; color: #fff; font-weight: 700; cursor: pointer; }
+.pcf-btn:disabled { opacity: .7; cursor: default; }
+.pcf-btn-secondary { background: #4b5563; }
+.pcf-success { color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 10px 12px; border-radius: 10px; }
+.pcf-error { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 10px; }
+.pcf-note { margin-top: 14px; font-size: 13px; color: #6b7280; }
+@media (max-width: 600px) { .pcf-card { padding: 20px 16px; } .pcf-qr { max-width: 230px; } }
+
+/* Step 37 — QR popup + success panel (UI only) */
+.pcf-modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1000; overflow-y: auto; }
+.pcf-modal { width: 100%; max-width: 420px; max-height: calc(100vh - 32px); overflow-y: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px 18px; box-shadow: 0 18px 48px rgba(15,23,42,.25); }
+.pcf-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.pcf-modal-header h3 { margin: 0; font-size: 18px; color: #111827; }
+.pcf-modal-close { border: none; background: none; font-size: 24px; line-height: 1; color: #6b7280; cursor: pointer; padding: 2px 6px; }
+.pcf-modal-close:hover { color: #111827; }
+.pcf-modal-actions { display: flex; justify-content: center; margin-top: 14px; }
+.pcf-modal-course p { margin: 4px 0; color: #1f2937; font-size: 14px; }
+.pcf-modal-form input[type="file"] { padding: 9px 10px; background: #f9fafb; cursor: pointer; }
+.pcf-success-panel { border: 1px solid #a7f3d0; background: #ecfdf5; border-radius: 12px; padding: 16px 14px; display: flex; flex-direction: column; gap: 6px; color: #064e3b; }
+.pcf-success-panel p { margin: 0; font-size: 14px; }
+.pcf-success-title { font-weight: 800; font-size: 16px; color: #047857; }
+@media (max-width: 600px) { .pcf-modal { padding: 16px 14px; } }
+

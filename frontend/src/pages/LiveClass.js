@@ -71,7 +71,9 @@ const LiveClass = () => {
       // url = `${API_BASE_URL}/api/schedules/teacher/${user._id}`;
     }
 
-    const res = await axios.get(url);
+    const res = await axios.get(url, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    });
 
     setSchedules(res.data || []);
   } catch (err) {

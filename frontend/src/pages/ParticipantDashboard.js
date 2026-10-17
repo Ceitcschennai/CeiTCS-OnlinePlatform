@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaBookOpen, FaTasks, FaQuestionCircle, FaVideo,
   FaUserCircle, FaClock, FaStar, FaCheckCircle,
@@ -10,6 +11,7 @@ import API_BASE_URL from "../config/api";
 import "../styles/participantDashboard.css";
 
 const ParticipantDashboard = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   // Load user from localStorage on mount
@@ -33,17 +35,24 @@ const ParticipantDashboard = () => {
   const [saveMsg, setSaveMsg] = useState("");
 
   // Derive approved user from localStorage once
+  // Fetches ONLY the logged-in participant's own record via the
+  // owner-scoped route GET /api/employee/:id using the existing JWT.
   const [approvedUser, setApprovedUser] = useState(null);
   useEffect(() => {
-    if (user && user.email) {
-      fetch(`${API_BASE_URL}/api/employee`)
-        .then(r => r.json())
-        .then(list => {
-          const found = list.find(e => e.email === user.email);
-          if (found) setApprovedUser(found);
-        })
-        .catch(() => {});
-    }
+    const token = localStorage.getItem("token");
+    const ownId =
+      localStorage.getItem("userId") || (user && (user.id || user._id));
+
+    if (!ownId || !token) return;
+
+    fetch(`${API_BASE_URL}/api/employee/${ownId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(found => {
+        if (found && found._id) setApprovedUser(found);
+      })
+      .catch(() => {});
   }, [user]);
 
   // Derive participant from approvedUser or user
@@ -60,7 +69,9 @@ const ParticipantDashboard = () => {
        setLoadingUpcoming(true);
        try {
          // Step 1: Get participant enrolled subjects
-         const subjectsRes = await fetch(`${API_BASE_URL}/api/queries/participant/${employeeId}/subjects`);
+          // Step 13 H1: hardened routes require the participant JWT
+          const authHeaders = { Authorization: `Bearer ${localStorage.getItem("token")}` };
+         const subjectsRes = await fetch(`${API_BASE_URL}/api/queries/participant/${employeeId}/subjects`, { headers: authHeaders });
          const subjectsData = await subjectsRes.json();
 
          // Step 2: Extract courseCode values from response.subjects
@@ -72,7 +83,7 @@ const ParticipantDashboard = () => {
          }
 
          // Step 3: Get schedules for enrolled courses
-         const schedRes = await fetch(`${API_BASE_URL}/api/schedules/by-codes?codes=${courseCodes.join(",")}`);
+         const schedRes = await fetch(`${API_BASE_URL}/api/schedules/by-codes?codes=${courseCodes.join(",")}`, { headers: authHeaders });
          const schedules = await schedRes.json();
 
          // Step 4-5: Filter to upcoming schedules only and sort by startDate ascending
@@ -177,7 +188,12 @@ const ParticipantDashboard = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/employee/${participant._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(localStorage.getItem("token")
+            ? { Authorization: `Bearer ${localStorage.getItem("token")}` }
+            : {})
+        },
         body: JSON.stringify({
           salutation: formData.salutation,
           firstName:  formData.firstName,
@@ -532,6 +548,16 @@ const ParticipantDashboard = () => {
     cardHeader: { display: "flex", alignItems: "center", marginBottom: "16px" },
     cardTitle: { fontSize: "1rem", fontWeight: "700", color: "#1f2937" },
 
+    payBtn: {
+      background: "linear-gradient(135deg, #0d9488, #14b8a6)",
+      color: "white", border: "none",
+      padding: "9px 16px", borderRadius: "10px",
+      fontSize: "0.84rem", fontWeight: "700", cursor: "pointer",
+      whiteSpace: "nowrap", flexShrink: 0,
+      boxShadow: "0 4px 14px rgba(13,148,136,0.3)",
+      transition: "transform 0.15s ease"
+    },
+
     progressTrack: { background: "#f3f4f6", borderRadius: "999px", height: "8px", overflow: "hidden" },
     progressFill: { height: "8px", borderRadius: "999px", transition: "width 0.5s ease" },
 
@@ -591,6 +617,34 @@ const ParticipantDashboard = () => {
   const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Participant";
   const initialsDash = `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}`.toUpperCase() || "P";
   const enrolledCount = participant?.enrolledSubjects?.length || 0;
+
+  // Step 26: enrolled courses list for "Pay Course Fee" navigation.
+  // Source: the existing owner-scoped GET /api/employee/:id record
+  // (fetched into approvedUser above) — backend-derived courseCode/
+  // courseName, never hardcoded, never payment-status filtered. Mirrors
+  // the exact fields PayCourseFee.js validates for its enrollment gate
+  // (main courseCode + enrolledSubjects[]), deduped by courseCode.
+  const enrolledCourses = (() => {
+    const byKey = new Map();
+    const add = (code, name) => {
+      const courseCode = String(code || "").trim();
+      if (!courseCode) return;
+      const key = courseCode.toLowerCase();
+      const courseName = String(name || "").trim();
+      const existing = byKey.get(key);
+      if (existing) {
+        if (!existing.courseName && courseName) existing.courseName = courseName;
+        return;
+      }
+      byKey.set(key, { courseCode, courseName });
+    };
+    add(participant?.courseCode, participant?.courseName);
+    const subs = Array.isArray(participant?.enrolledSubjects)
+      ? participant.enrolledSubjects
+      : [];
+    subs.forEach((sub) => add(sub?.courseCode, sub?.courseName));
+    return Array.from(byKey.values());
+  })();
 
   const stats = [
     { label: "Courses Enrolled", value: enrolledCount.toString(), icon: <FaBookOpen />, color: "#0d9488", bg: "#f0fdfa" },
@@ -667,6 +721,41 @@ const ParticipantDashboard = () => {
           </div>
         ))}
       </div>
+
+      {/* ENROLLED COURSES + PAY COURSE FEE (Step 26) */}
+      {enrolledCourses.length > 0 && (
+        <div style={s.card}>
+          <div style={s.cardHeader}>
+            <FaBookOpen style={{ color: "#0d9488", marginRight: 8 }} />
+            <span style={s.cardTitle}>My Courses</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {enrolledCourses.map((c) => (
+              <div key={c.courseCode} style={{ ...s.liveRow, justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontWeight: "700", fontSize: "0.92rem", color: "#1f2937" }}>
+                    {c.courseName || c.courseCode}
+                  </div>
+                  <div style={{ fontSize: "0.78rem", color: "#6b7280", marginTop: 2 }}>
+                    Course Code: {c.courseCode}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  style={s.payBtn}
+                  onClick={() =>
+                    navigate(
+                      `/pay-course-fee?courseCode=${encodeURIComponent(c.courseCode)}`
+                    )
+                  }
+                >
+                  Pay Course Fee
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* PROGRESS + UPCOMING */}
       <div style={s.twoCol}>

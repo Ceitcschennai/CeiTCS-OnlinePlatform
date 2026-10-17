@@ -70,7 +70,8 @@ export const LiveClassProvider = ({ children }) => {
 
     try {
       const res = await fetch(
-        `${API_BASE_URL}/api/schedules/employee/${employeeId}`
+        `${API_BASE_URL}/api/schedules/employee/${employeeId}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
       const data = await res.json();

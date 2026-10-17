@@ -13,7 +13,6 @@ import AdminApprovals from "./pages/AdminApprovals";
 
 import Subjects from "./pages/Subjects";
 import Assignments from "./pages/Assignments";
-import Payments from "./pages/Payments";
 import LiveClass from "./pages/LiveClass";
 import NotFound from "./pages/NotFound";
 import RaiseQuery from "./pages/RaiseQuery";
@@ -25,6 +24,7 @@ import FacultyRegister from "./pages/FacultyRegister";          // kept for back
 import ManageParticipant from "./pages/ManageParticipant";
 import ManageSubjects from "./pages/ManageSubjects";
 import ManageFaculty from "./pages/ManageFaculty";
+import ManagePayments from "./pages/ManagePayments";
 import ParticipantDashboard from "./pages/ParticipantDashboard";
 import FacultyDashboard from "./pages/FacultyDashboard";
 
@@ -41,6 +41,9 @@ import ParticipantAlerts from "./pages/ParticipantAlerts";
 
 import MentorsPage from "./pages/MentorsPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
+import Messages from "./pages/Messages";
+import PaymentHistory from "./pages/PaymentHistory";
+import PayCourseFee from "./pages/PayCourseFee";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PROTECTED ROUTE
@@ -112,6 +115,10 @@ function App() {
         <Route path="/manage-teachers"    element={Layout(ManageFaculty)} />
         <Route path="/employee-dashboard" element={Layout(ParticipantDashboard)} />
         <Route path="/manage-subjects"    element={Layout(ManageSubjects)} />
+        <Route
+          path="/manage-payments"
+          element={<ProtectedRoute element={Layout(ManagePayments)} requiredRole="admin" />}
+        />
         <Route path="/participant-alerts" element={Layout(ParticipantAlerts)} />
 
         {/* ── FACULTY (TRAINEE) ROUTES ─────────────────────────────────────── */}
@@ -138,10 +145,13 @@ function App() {
         <Route path="/subjects"        element={Layout(Subjects)} />
         <Route path="/subject-details" element={Layout(SubjectDetails)} />
         <Route path="/assignments"     element={Layout(Assignments)} />
-        <Route path="/payments"        element={Layout(Payments)} />
+        <Route path="/payments"        element={<Navigate to="/payment-history" replace />} />
+        <Route path="/payment-history" element={Layout(PaymentHistory)} />
+        <Route path="/pay-course-fee" element={Layout(PayCourseFee)} />
         <Route path="/live-class"      element={Layout(LiveClass)} />
         <Route path="/queries"         element={Layout(ParticipantQueries)} />
         <Route path="/alerts"          element={Layout(SystemAlerts)} />
+        <Route path="/messages"        element={Layout(Messages)} />
 
         {/* ── 404 ─────────────────────────────────────────────────────────── */}
         <Route path="*" element={<NotFound />} />

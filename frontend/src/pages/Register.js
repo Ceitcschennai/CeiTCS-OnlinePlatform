@@ -645,11 +645,27 @@ function ParticipantForm() {
     data.append("salutation", formData.title);
     data.append("proof", formData.proof);
 
+    // Step 13 G1 — carry the course selection made on CourseDetailPage
+    // so the backend can persist enrollment into courseCode/courseName
+    try {
+      const rawSelected = localStorage.getItem("selectedCourseForEnrollment");
+      if (rawSelected) {
+        const parsed = JSON.parse(rawSelected);
+        if (parsed && parsed.courseCode) data.append("courseCode", parsed.courseCode);
+        if (parsed && parsed.courseName) data.append("courseName", parsed.courseName);
+      }
+    } catch (e) {
+      // corrupted selection is ignored — registration still proceeds
+    }
+
     try {
       const res = await axios.post(`${API_BASE_URL}/api/employee/register`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (res.data.success) {
+        // Selection consumed — clear it so later registrations do not
+        // inherit it
+        try { localStorage.removeItem("selectedCourseForEnrollment"); } catch (e) {}
         setSuccess("Registration successful! Waiting for admin approval.");
         setFormData({
           title: "Mr", firstName: "", lastName: "", mobile: "", email: "",

@@ -1,0 +1,47 @@
+/* LMSCard Component-Specific Styles */
+/* Note: Base .card-lms styles defined in design-system.css */
+
+/* Clickable card modifier */
+.card-lms--clickable {
+  cursor: pointer;
+}
+
+.card-lms--clickable:focus-visible {
+  outline: 2px solid var(--lms-primary);
+  outline-offset: 2px;
+}
+
+/* No border modifier */
+.card-lms--no-border {
+  border: none;
+}
+
+/* No shadow modifier */
+.card-lms--no-shadow {
+  box-shadow: none;
+}
+
+/* Padding variants */
+.card-lms--padding-none .card-lms-header,
+.card-lms--padding-none .card-lms-body,
+.card-lms--padding-none .card-lms-footer {
+  padding: var(--lms-space-3);
+}
+
+.card-lms--padding-sm .card-lms-header,
+.card-lms--padding-sm .card-lms-body,
+.card-lms--padding-sm .card-lms-footer {
+  padding: var(--lms-space-4);
+}
+
+.card-lms--padding-lg .card-lms-header,
+.card-lms--padding-lg .card-lms-body,
+.card-lms--padding-lg .card-lms-footer {
+  padding: var(--lms-space-6);
+}
+
+/* Hover effect modifier */
+.card-lms--hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--lms-shadow-lg);
+}

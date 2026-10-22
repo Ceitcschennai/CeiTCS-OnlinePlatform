@@ -28,11 +28,13 @@ const initDB = async () => {
 // connect immediately (important for Vercel cold start)
 initDB();
 
-# ─────────────────────────────────────────────
-# ✅ CORS
-# ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// ✅ CORS
+// ─────────────────────────────────────────────
 const allowedOrigins = [
   "http://localhost:3000",
+  "https://www.ceitcsacademy.com",
+  "https://ceitcsacademy.com",
   "https://cei-tcs-online-platform.vercel.app",
   "https://cei-tcs-online-platform-9xjv.vercel.app"
 ];

@@ -28,22 +28,27 @@ const initDB = async () => {
 // connect immediately (important for Vercel cold start)
 initDB();
 
-// ─────────────────────────────────────────────
-// ✅ CORS
-// ─────────────────────────────────────────────
+# ─────────────────────────────────────────────
+# ✅ CORS
+# ─────────────────────────────────────────────
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://ceitcsprofessionaltraining.vercel.app"
+  "https://cei-tcs-online-platform.vercel.app",
+  "https://cei-tcs-online-platform-9xjv.vercel.app"
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Allow requests with no Origin (server-to-server, curl, etc.)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(null, true);
+      // Reject unapproved origins
+      return callback(null, false);
     },
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
 

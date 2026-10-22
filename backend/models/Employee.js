@@ -70,6 +70,12 @@ const employeeSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  upiId: {
+    type: String,
+    lowercase: true,
+    trim: true,
+    default: undefined
+  },
   isActive: {
     type: Boolean,
     default: true

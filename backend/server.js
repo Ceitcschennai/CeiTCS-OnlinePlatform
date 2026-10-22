@@ -94,6 +94,13 @@ app.get("/", (req, res) => {
 // ─────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error("🔥 Global error:", err);
+  if (err.code === 11000) {
+    // Mongoose duplicate key error — transactionId or billNumber conflict
+    return res.status(409).json({
+      success: false,
+      message: "A payment with this transaction ID or bill number already exists. Each transaction ID and bill number must be unique.",
+    });
+  }
   res.status(500).json({
     success: false,
     message: err.message || "Internal server error",

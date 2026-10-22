@@ -6,5 +6,5 @@
   "routes": [
     { "src": "/(.*)", "dest": "api/index.js" }
   ],
-  "include": ["node_modules/pdfkit/js/standard-fonts/**"]
+  "include": ["node_modules/pdfkit/js/**"]
 }

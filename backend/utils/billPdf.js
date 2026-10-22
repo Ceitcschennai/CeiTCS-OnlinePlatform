@@ -9,6 +9,26 @@
    Uses pdfkit (pure-JS, no native deps, Vercel-safe).
    ============================================ */
 
+// ✅ Explicitly require PDFKit standard-font modules to prevent
+// Vercel serverless builder from pruning them. These modules
+// provide Helvetica, Helvetica-Bold, and other built-in fonts.
+// Without this, Vercel's @vercel/node builder may prune the
+// standard-fonts directory, causing "Cannot find module"
+// errors at runtime in production.
+require("pdfkit/js/standard-fonts/Helvetica.cjs");
+require("pdfkit/js/standard-fonts/Helvetica-Bold.cjs");
+require("pdfkit/js/standard-fonts/Helvetica-BoldOblique.cjs");
+require("pdfkit/js/standard-fonts/Helvetica-Oblique.cjs");
+require("pdfkit/js/standard-fonts/Courier.cjs");
+require("pdfkit/js/standard-fonts/Courier-Bold.cjs");
+require("pdfkit/js/standard-fonts/Courier-BoldOblique.cjs");
+require("pdfkit/js/standard-fonts/Courier-Oblique.cjs");
+require("pdfkit/js/standard-fonts/Times-Roman.cjs");
+require("pdfkit/js/standard-fonts/Times-Bold.cjs");
+require("pdfkit/js/standard-fonts/Times-Bold-Italic.cjs");
+require("pdfkit/js/standard-fonts/Times-Italic.cjs");
+require("pdfkit/js/standard-fonts/ZapfDingbats.cjs");
+
 const PDFDocument = require("pdfkit");
 
 const safeText = (value, fallback = "-") => {

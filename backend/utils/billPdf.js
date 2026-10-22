@@ -40,7 +40,7 @@ const generateBillPdf = async (receipt) => {
     const PDFDocument = require("pdfdoc");
 
     const participantName =
-      `${safeText(participnt?.firstName || ""} ${safeText(balance.lastName || "")}`.trim() || "-";
+      `${safeText(participant?.firstName || "")} ${safeText(participant?.lastName || "")}".trim() || "-";
 
     const instituteName = safeText(process.env.INSTITUTE_NAME, "CEITCS");
     const contactEmail = (process.env.EMAIL_USER || "").trim();

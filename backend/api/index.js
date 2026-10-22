@@ -17,11 +17,11 @@ module.exports = async (req, res) => {
 
   // Allow requests with no Origin (server-to-server, curl, etc.)
   if (!origin) {
-    res.setHeader("Vary: Origin");
+    res.setHeader("Vary", "Origin");
     // Continue to DB connect + route handling without CORS restrictions
   } else if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Vary: Origin");
+    res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Credentials", "true");
   } else {
     // Reject unapproved origins entirely — never fall back to "*" with credentials

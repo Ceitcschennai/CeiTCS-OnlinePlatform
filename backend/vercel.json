@@ -10,10 +10,9 @@
       }
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api/index.js"
-    }
-  ]
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "routes": []
 }

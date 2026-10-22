@@ -7,5 +7,8 @@
     "multer-storage-cloudinary": "^4.0.0",
     "react-phone-input-2": "^2.15.1",
     "serverless-http": "^4.0.0"
+  },
+  "scripts": {
+    "vercel-build": "cd frontend && npm install && npm run build && cd backend && npm install"
   }
 }

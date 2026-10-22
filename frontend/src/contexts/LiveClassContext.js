@@ -55,10 +55,22 @@ export const LiveClassProvider = ({ children }) => {
   const fetchSchedules = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/schedules`);
+      if (!res.ok) {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await res.json();
+          console.error("Schedules error:", errorData.message || errorData.error);
+        } else {
+          console.error("Schedules request failed with status", res.status);
+        }
+        setSchedules([]);
+        return;
+      }
       const data = await res.json();
       setSchedules(data || []);
     } catch (err) {
       console.error("Error fetching schedules:", err);
+      setSchedules([]);
     }
   };
 
@@ -93,10 +105,22 @@ export const LiveClassProvider = ({ children }) => {
   const fetchLiveClasses = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/liveclasses`);
+      if (!res.ok) {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await res.json();
+          console.error("Live classes error:", errorData.message || errorData.error);
+        } else {
+          console.error("Live classes request failed with status", res.status);
+        }
+        setLiveClasses([]);
+        return;
+      }
       const data = await res.json();
       setLiveClasses(data || []);
     } catch (err) {
       console.error(err);
+      setLiveClasses([]);
     }
   };
 

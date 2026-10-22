@@ -6,22 +6,30 @@ console.log("ENV CHECK:", {
 });
 
 module.exports = async (req, res) => {
-  // ✅ Fix CORS — allow all Vercel preview URLs + localhost
+  // ✅ CORS — allow approved origins only, with credentials support
   const origin = req.headers.origin || "";
   const allowedOrigins = [
     "http://localhost:3000",
+    "https://www.ceitcsacademy.com",
+    "https://ceitcsacademy.com",
     "https://cei-tcs-online-platform-9xjv.vercel.app",
   ];
 
-  if (allowedOrigins.includes(origin) || origin.includes("vercel.app")) {
+  // Allow requests with no Origin (server-to-server, curl, etc.)
+  if (!origin) {
+    res.setHeader("Vary: Origin");
+    // Continue to DB connect + route handling without CORS restrictions
+  } else if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary: Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   } else {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    // Reject unapproved origins entirely — never fall back to "*" with credentials
+    return res.status(403).json({ error: "CORS origin not allowed" });
   }
 
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") return res.status(200).end();
 

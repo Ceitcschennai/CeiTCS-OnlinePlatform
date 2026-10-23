@@ -7,7 +7,7 @@ import {
   FaCalendarAlt, FaBullhorn, FaEdit, FaSave,
   FaUserTie, FaBriefcase, FaCheckCircle as FaCheckCircleSolid
 } from "react-icons/fa";
-import API_BASE_URL from "../config/api";
+import API_BASE, { apiFetch } from "../config/api";
 import "../styles/participantDashboard.css";
 
 const ParticipantDashboard = () => {

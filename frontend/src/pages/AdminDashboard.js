@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import API_BASE_URL from "../config/api";
+import API_BASE, { apiFetch } from "../config/api";
 import "../styles/adminDashboard.css";
 import LMSCard from "../components/common/LMSCard";
 import LMSButton from "../components/common/LMSButton";
@@ -74,10 +74,9 @@ const AdminDashboard = () => {
 
   const fetchPending = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/pending`, {
+      const data = await apiFetch("/api/admin/pending", {
         headers: getAuthHeaders()
       });
-      const data = await res.json();
       setPendingEmployees(data.employees || []);
       setPendingTeachers(data.teachers || []);
     } catch (err) {
@@ -91,7 +90,7 @@ const AdminDashboard = () => {
   const approveEmployee = async () => {
     if (!selectedEmployee) return;
     setLoading(true);
-    await fetch(`${API_BASE_URL}/api/employee/${selectedEmployee._id}/approve`, {
+    await apiFetch(`/api/employee/${selectedEmployee._id}/approve`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({ status: "Approved" })

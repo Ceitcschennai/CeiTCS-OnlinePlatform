@@ -1,9 +1,3 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const connectDB = require("./config/db");
-const path = require("path");
-
 dotenv.config();
 
 const app = express();
@@ -15,7 +9,6 @@ let isConnected = false;
 
 const initDB = async () => {
   if (isConnected) return;
-
   try {
     await connectDB();
     isConnected = true;
@@ -25,26 +18,19 @@ const initDB = async () => {
   }
 };
 
-// connect immediately (important for Vercel cold start)
 initDB();
 
 // ─────────────────────────────────────────────
-// ✅ CORS
+// ✅ CORS — use shared config from backend/config/cors.js
 // ─────────────────────────────────────────────
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://www.ceitcsacademy.com",
-  "https://ceitcsacademy.com",
-  "https://cei-tcs-online-platform.vercel.app",
-  "https://cei-tcs-online-platform-9xjv.vercel.app"
-];
+const corsConfig = require("./config/cors");
 
 app.use(
   cors({
     origin: function (origin, callback) {
       // Allow requests with no Origin (server-to-server, curl, etc.)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (corsConfig.allowedOrigins.includes(origin)) return callback(null, true);
       // Reject unapproved origins
       return callback(null, false);
     },

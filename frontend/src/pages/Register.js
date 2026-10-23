@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import API_BASE_URL from "../config/api";
+import API_BASE, { apiFetch } from "../config/api";
 import "../styles/register.css";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";

@@ -1,5 +1,4 @@
 const corsConfig = require("./config/cors");
-const connectDB = require("../config/db");
 
 console.log("ENV CHECK:", {
   MONGO_URI: process.env.MONGO_URI ? "EXISTS ✅" : "MISSING ❌",
@@ -31,13 +30,6 @@ module.exports = (req, res) => {
   if (req.method === "OPTIONS") {
     res.statusCode = 204;
     return res.end();
-  }
-
-  // Continue to DB connect + route handling
-  try {
-    await connectDB();
-  } catch (dbErr) {
-    console.error("❌ DB connection error:", dbErr.message);
   }
 
   console.log(`📥 ${req.method} ${req.url}`);

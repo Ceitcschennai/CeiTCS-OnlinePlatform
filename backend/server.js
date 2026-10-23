@@ -1,56 +1,102 @@
+
+// ─────────────────────────────────────────────
+// ENVIRONMENT CONFIGURATION
+// ─────────────────────────────────────────────
+const dotenv = require("dotenv");
 dotenv.config();
+
+// ─────────────────────────────────────────────
+// CORE IMPORTS
+// ─────────────────────────────────────────────
+const express = require("express");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const corsConfig = require("./config/cors");
 
 const app = express();
 
 // ─────────────────────────────────────────────
-// ✅ CONNECT DATABASE (FOR BOTH LOCAL & VERCEL)
+// DATABASE CONNECTION
 // ─────────────────────────────────────────────
 let isConnected = false;
+let connectionPromise = null;
 
 const initDB = async () => {
   if (isConnected) return;
-  try {
-    await connectDB();
-    isConnected = true;
-    console.log("✅ MongoDB Connected");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error.message);
+
+  if (!connectionPromise) {
+    connectionPromise = connectDB()
+      .then(() => {
+        isConnected = true;
+        console.log("MongoDB connected");
+      })
+      .catch((error) => {
+        connectionPromise = null;
+        console.error("MongoDB connection error:", error.message);
+        throw error;
+      });
   }
+
+  return connectionPromise;
 };
 
-initDB();
+// Initialize the database for local startup.
+// The connection is also awaited by middleware for incoming requests.
+if (process.env.NODE_ENV !== "production") {
+  initDB().catch(() => {
+    // The error is already logged by initDB.
+  });
+}
+
+// Ensure the database is connected before processing API requests.
+app.use(async (req, res, next) => {
+  try {
+    await initDB();
+    next();
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      message: "Database connection unavailable. Please try again later.",
+    });
+  }
+});
 
 // ─────────────────────────────────────────────
-// ✅ CORS — use shared config from backend/config/cors.js
+// CORS CONFIGURATION
 // ─────────────────────────────────────────────
-const corsConfig = require("./config/cors");
+const allowedOrigins = Array.isArray(corsConfig.allowedOrigins)
+  ? corsConfig.allowedOrigins
+  : [];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no Origin (server-to-server, curl, etc.)
-      if (!origin) return callback(null, true);
-      if (corsConfig.allowedOrigins.includes(origin)) return callback(null, true);
-      // Reject unapproved origins
-      return callback(null, false);
-    },
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  })
-);
+const corsOptions = {
+  origin(origin, callback) {
+    // Allow requests without an Origin header, such as server-to-server calls.
+    if (!origin) return callback(null, true);
 
-app.options("*", cors());
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Reject origins not in the configured allowlist.
+    return callback(null, false);
+  },
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+};
+
+// CORS must run before routes and authentication.
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 // ─────────────────────────────────────────────
-// BODY PARSER
+// BODY PARSERS
 // ─────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 // ─────────────────────────────────────────────
-// ROUTES
+// API ROUTES
 // ─────────────────────────────────────────────
 app.use("/api/auth", require("./routes/authroutes.js"));
 app.use("/api/materials", require("./routes/materialroutes.js"));
@@ -72,28 +118,30 @@ app.use("/api/messages", require("./routes/messageRoutes.js"));
 app.use("/api/payments", require("./routes/paymentroutes.js"));
 
 // ─────────────────────────────────────────────
-// HEALTH CHECK
+// HEALTH CHECKS
 // ─────────────────────────────────────────────
 app.get("/api", (req, res) => {
-  res.json({ status: "API running ✅" });
+  res.json({ status: "API running" });
 });
 
 app.get("/", (req, res) => {
-  res.send("Backend is running ✅");
+  res.send("Backend is running");
 });
 
 // ─────────────────────────────────────────────
 // GLOBAL ERROR HANDLER
 // ─────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error("🔥 Global error:", err);
+  console.error("Global error:", err.message);
+
   if (err.code === 11000) {
-    // Mongoose duplicate key error — transactionId or billNumber conflict
     return res.status(409).json({
       success: false,
-      message: "A payment with this transaction ID or bill number already exists. Each transaction ID and bill number must be unique.",
+      message:
+        "A payment with this transaction ID or bill number already exists. Each transaction ID and bill number must be unique.",
     });
   }
+
   res.status(500).json({
     success: false,
     message: err.message || "Internal server error",
@@ -107,11 +155,11 @@ if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 5000;
 
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
 // ─────────────────────────────────────────────
-// EXPORT FOR VERCEL
+// VERCEL EXPORT
 // ─────────────────────────────────────────────
 module.exports = app;

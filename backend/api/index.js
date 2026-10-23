@@ -1,24 +1,22 @@
-const corsConfig = require("./config/cors");
+const allowedOrigins = [
+  "https://www.ceitcsacademy.com",
+  "https://ceitcsacademy.com",
+  "http://localhost:3000",
+];
 
-console.log("ENV CHECK:", {
-  MONGO_URI: process.env.MONGO_URI ? "EXISTS ✅" : "MISSING ❌",
-});
+if (process.env.FRONTEND_URL) {
+  const envOrigins = process.env.FRONTEND_URL.split(",").map((s) => s.trim());
+  allowedOrigins.push(...envOrigins);
+}
 
-module.exports = (req, res) => {
-  // ✅ CORS — allow approved origins only, with credentials support
-  // Handle CORS and OPTIONS FIRST, before requiring/using the Express app
+module.exports = async (req, res) => {
+  // FIRST: set CORS headers using allow-list
   const origin = req.headers.origin;
-  if (origin && corsConfig.allowedOrigins.includes(origin)) {
+  const originIsAllowed = allowedOrigins.includes(origin);
+  if (originIsAllowed) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
-  } else if (!origin) {
-    // Requests with no Origin (server-to-server, curl, etc.) — allow but don't set restrictive origin
-    res.setHeader("Vary", "Origin");
-  } else {
-    // Reject unapproved origins entirely — never fall back to "*" with credentials
-    return res.status(403).json({ error: "CORS origin not allowed" });
   }
-
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
   res.setHeader(
@@ -29,21 +27,19 @@ module.exports = (req, res) => {
 
   if (req.method === "OPTIONS") {
     res.statusCode = 204;
-    return res.end();
+    res.end();
+    return;
   }
 
-  console.log(`📥 ${req.method} ${req.url}`);
-
   try {
-    await new Promise((resolve, reject) => {
-      res.on("finish", resolve);
-      res.on("error", reject);
-      require("../server")(req, res);
-    });
+    const connectDB = require("../config/db");
+    await connectDB();
+    const app = require("../server");
+    return app(req, res);
   } catch (err) {
-    console.error("❌ ERROR:", err.message);
+    console.error("❌ API handler error:", err.message);
     if (!res.headersSent) {
-      return res.status(500).json({ error: err.message });
+      res.status(500).json({ message: err.message || "Internal server error", error: err.message });
     }
   }
 };
